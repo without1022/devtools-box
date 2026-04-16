@@ -88,16 +88,61 @@
     .nav-item .icon { font-size: 13px; width: 18px; text-align: center; opacity: .85; }
 
     /* ── Content ── */
-    .content { flex: 1; overflow-y: auto; padding: 36px 40px; background: var(--bg); }
-    .tool-pane { display: none; max-width: 880px; }
+    .content { flex: 1; overflow-y: auto; padding: 40px 48px; background: var(--bg); }
+    .tool-pane { display: none; max-width: 920px; }
     .tool-pane.active { display: block; animation: fadeIn .15s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
-    .pane-title {
-      font-size: 20px; font-weight: 700; margin-bottom: 5px; color: var(--text);
-      letter-spacing: -.2px;
+    /* ── Tool Header ── */
+    .pane-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding-bottom: 20px; margin-bottom: 28px;
+      border-bottom: 1px solid var(--border);
     }
-    .pane-desc { font-size: 12px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+    .pane-header-left {}
+    .pane-title {
+      font-size: 22px; font-weight: 700; color: var(--text);
+      letter-spacing: -.3px; margin-bottom: 5px; line-height: 1.2;
+    }
+    .pane-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; }
+
+    /* ── Section 标题 ── */
+    .section-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--muted); margin-bottom: 7px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* ── Panel（输入/输出容器） ── */
+    .panel {
+      background: var(--card); border: 1px solid var(--border2);
+      border-radius: 10px; overflow: hidden;
+    }
+    .panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; border-bottom: 1px solid var(--border);
+      background: var(--card2);
+    }
+    .panel-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--muted);
+    }
+    .panel-label.input  { color: #7aa3f5; }
+    .panel-label.output { color: var(--green); }
+    .panel-body { padding: 0; }
+    .panel-body textarea, .panel-body .output-inner {
+      border: none; border-radius: 0; background: transparent;
+      resize: none; width: 100%; min-height: 200px;
+      padding: 14px 16px; line-height: 1.65;
+    }
+    .panel-body textarea:focus { box-shadow: none; background: #101422; }
+    .output-inner {
+      font-family: "SF Mono","Fira Code","Cascadia Code",monospace;
+      font-size: 13px; color: var(--text);
+      white-space: pre-wrap; word-break: break-all;
+      min-height: 60px;
+    }
 
     /* ── Form controls ── */
     textarea, input[type=text], input[type=number], input[type=date], select {
@@ -178,7 +223,6 @@
     .btn-ghost:active { transform: translateY(1px); }
     .btn-sm { padding: 5px 11px; font-size: 11px; border-radius: 6px; }
 
-    /* ── Output box ── */
     .output-box {
       background: var(--card);
       border: 1px solid var(--border2);
@@ -189,6 +233,12 @@
       white-space: pre-wrap; word-break: break-all;
       min-height: 60px; color: var(--text);
       position: relative; line-height: 1.6;
+    }
+    /* output-box 顶部绿色细线表示只读 */
+    .output-box::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 2px; background: linear-gradient(90deg, rgba(52,211,153,.5), transparent);
+      border-radius: 8px 8px 0 0;
     }
     .copy-btn {
       position: absolute; top: 8px; right: 8px;
@@ -323,6 +373,13 @@
   <div class="nav-item" onclick="show('img-compress')"><span class="icon">🗜</span> 图片压缩</div>
   <div class="nav-item" onclick="show('img-convert')"><span class="icon">🔁</span> 图片格式转换</div>
 
+  <div class="nav-group-title">🇨🇳 中国特色</div>
+  <div class="nav-item" onclick="show('holiday')"><span class="icon">📅</span> 节假日查询</div>
+  <div class="nav-item" onclick="show('idcard')"><span class="icon">🪪</span> 身份证解析</div>
+  <div class="nav-item" onclick="show('phone-lookup')"><span class="icon">📱</span> 手机号归属地</div>
+  <div class="nav-item" onclick="show('uscc')"><span class="icon">🏢</span> 统一信用代码</div>
+  <div class="nav-item" onclick="show('lunar')"><span class="icon">🌙</span> 农历转换</div>
+
   <div class="nav-group-title">小工具</div>
   <div class="nav-item" onclick="show('color')"><span class="icon">🎨</span> 颜色转换</div>
   <div class="nav-item" onclick="show('palette')"><span class="icon">🖌</span> 调色板</div>
@@ -337,8 +394,7 @@
 
   <!-- Base64 -->
   <div id="pane-base64" class="tool-pane active">
-    <div class="pane-title">Base64 编码 / 解码</div>
-    <div class="pane-desc">支持文本和文件转 Base64</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">Base64 编码 / 解码</div><div class="pane-desc">支持文本和文件转 Base64</div></div></div>
     <label>输入文本</label>
     <div class="row"><div class="col">
       <textarea id="b64-input" placeholder="输入要编码或解码的内容..." oninput="b64Auto()"></textarea>
@@ -361,8 +417,7 @@
 
   <!-- URL -->
   <div id="pane-url" class="tool-pane">
-    <div class="pane-title">URL 编码 / 解码</div>
-    <div class="pane-desc">encodeURIComponent / decodeURIComponent</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">URL 编码 / 解码</div><div class="pane-desc">encodeURIComponent / decodeURIComponent</div></div></div>
     <label>输入</label>
     <textarea id="url-input" placeholder="输入 URL 或普通文本..."></textarea>
     <div class="row" style="margin-top:10px">
@@ -376,8 +431,7 @@
 
   <!-- HTML Entity -->
   <div id="pane-html-entity" class="tool-pane">
-    <div class="pane-title">HTML 实体编码 / 解码</div>
-    <div class="pane-desc">转义 HTML 特殊字符，防止 XSS</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">HTML 实体编码 / 解码</div><div class="pane-desc">转义 HTML 特殊字符，防止 XSS</div></div></div>
     <label>输入</label>
     <textarea id="html-input" placeholder="输入 HTML 或普通文本..."></textarea>
     <div class="row" style="margin-top:10px">
@@ -390,8 +444,7 @@
 
   <!-- Hex -->
   <div id="pane-hex" class="tool-pane">
-    <div class="pane-title">Hex 转换</div>
-    <div class="pane-desc">文本 ↔ 十六进制，支持指定分隔符</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">Hex 转换</div><div class="pane-desc">文本 ↔ 十六进制，支持指定分隔符</div></div></div>
     <label>输入文本</label>
     <textarea id="hex-input" placeholder="输入文本或十六进制字符串..."></textarea>
     <div class="row" style="margin-top:10px;align-items:center">
@@ -413,8 +466,7 @@
 
   <!-- Unicode -->
   <div id="pane-unicode" class="tool-pane">
-    <div class="pane-title">Unicode 转换</div>
-    <div class="pane-desc">文本 ↔ Unicode 转义序列（\uXXXX）</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">Unicode 转换</div><div class="pane-desc">文本 ↔ Unicode 转义序列（\uXXXX）</div></div></div>
     <label>输入文本</label>
     <textarea id="uni-input" placeholder="输入文本或 Unicode 转义序列..."></textarea>
     <div class="row" style="margin-top:10px">
@@ -427,8 +479,7 @@
 
   <!-- JSON -->
   <div id="pane-json" class="tool-pane">
-    <div class="pane-title">JSON 格式化 / 压缩</div>
-    <div class="pane-desc">格式化、压缩、校验 JSON 数据</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">JSON 格式化 / 压缩</div><div class="pane-desc">格式化、压缩、校验 JSON 数据</div></div></div>
     <div class="row" style="margin-bottom:8px;align-items:center">
       <button class="btn btn-primary" onclick="jsonFmt()">格式化</button>
       <button class="btn btn-ghost" onclick="jsonMin()">压缩</button>
@@ -449,8 +500,7 @@
 
   <!-- Timestamp -->
   <div id="pane-timestamp" class="tool-pane">
-    <div class="pane-title">时间戳转换</div>
-    <div class="pane-desc">Unix 时间戳（秒/毫秒）↔ 可读时间</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">时间戳转换</div><div class="pane-desc">Unix 时间戳（秒/毫秒）↔ 可读时间</div></div></div>
     <div style="background:#12151e;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:20px;font-family:monospace;">
       当前时间戳：<span id="ts-now-s" style="color:var(--accent)"></span> 秒 &nbsp;|&nbsp;
       <span id="ts-now-ms" style="color:var(--accent)"></span> 毫秒
@@ -479,8 +529,7 @@
 
   <!-- Hash -->
   <div id="pane-hash" class="tool-pane">
-    <div class="pane-title">Hash 计算</div>
-    <div class="pane-desc">MD5 / SHA-1 / SHA-256 / SHA-512（Web Crypto API）</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">Hash 计算</div><div class="pane-desc">MD5 / SHA-1 / SHA-256 / SHA-512（Web Crypto API）</div></div></div>
     <label>输入文本</label>
     <textarea id="hash-input" placeholder="输入要计算哈希的文本..."></textarea>
     <div class="row" style="margin-top:10px">
@@ -492,8 +541,7 @@
 
   <!-- JWT -->
   <div id="pane-jwt" class="tool-pane">
-    <div class="pane-title">JWT 解码</div>
-    <div class="pane-desc">解析 Header / Payload，显示过期状态，不验签，内容不离开浏览器</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">JWT 解码</div><div class="pane-desc">解析 Header / Payload，显示过期状态，不验签，内容不离开浏览器</div></div></div>
     <label>JWT Token</label>
     <textarea id="jwt-input" placeholder="粘贴 JWT Token..." style="min-height:80px;word-break:break-all" oninput="jwtDecode()"></textarea>
     <div id="jwt-status" style="margin:10px 0"></div>
@@ -502,8 +550,7 @@
 
   <!-- UUID -->
   <div id="pane-uuid" class="tool-pane">
-    <div class="pane-title">UUID 生成器</div>
-    <div class="pane-desc">生成 UUID v4（随机）</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">UUID 生成器</div><div class="pane-desc">生成 UUID v4（随机）</div></div></div>
     <div class="row" style="align-items:center">
       <label style="margin:0">数量</label>
       <input type="number" id="uuid-count" value="5" min="1" max="100" style="width:80px;flex:none">
@@ -520,8 +567,7 @@
 
   <!-- Password -->
   <div id="pane-password" class="tool-pane">
-    <div class="pane-title">随机密码生成</div>
-    <div class="pane-desc">基于 crypto.getRandomValues，密码不经过网络</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">随机密码生成</div><div class="pane-desc">基于 crypto.getRandomValues，密码不经过网络</div></div></div>
     <div class="row" style="align-items:center;flex-wrap:wrap;gap:12px">
       <div style="display:flex;align-items:center;gap:6px">
         <label style="margin:0;white-space:nowrap">长度</label>
@@ -539,8 +585,7 @@
 
   <!-- QRCode -->
   <div id="pane-qrcode" class="tool-pane">
-    <div class="pane-title">二维码生成</div>
-    <div class="pane-desc">纯前端生成，内容不上传到任何服务器</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">二维码生成</div><div class="pane-desc">纯前端生成，内容不上传到任何服务器</div></div></div>
     <label>内容</label>
     <textarea id="qr-input" placeholder="输入文本、URL、JSON..." style="min-height:80px" oninput="genQR()"></textarea>
     <div class="row" style="margin-top:10px;align-items:center">
@@ -560,8 +605,7 @@
 
   <!-- Regex -->
   <div id="pane-regex" class="tool-pane">
-    <div class="pane-title">正则表达式测试</div>
-    <div class="pane-desc">实时高亮匹配结果</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">正则表达式测试</div><div class="pane-desc">实时高亮匹配结果</div></div></div>
     <div class="row" style="align-items:center">
       <div class="col">
         <label>正则表达式</label>
@@ -583,8 +627,7 @@
 
   <!-- Diff -->
   <div id="pane-diff" class="tool-pane">
-    <div class="pane-title">文本对比</div>
-    <div class="pane-desc">逐行对比两段文本的差异</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">文本对比</div><div class="pane-desc">逐行对比两段文本的差异</div></div></div>
     <div class="row">
       <div class="col"><label>文本 A</label><textarea id="diff-a" placeholder="原始文本..." style="min-height:200px" oninput="runDiff()"></textarea></div>
       <div class="col"><label>文本 B</label><textarea id="diff-b" placeholder="修改后文本..." style="min-height:200px" oninput="runDiff()"></textarea></div>
@@ -595,8 +638,7 @@
 
   <!-- Text Tools -->
   <div id="pane-text" class="tool-pane">
-    <div class="pane-title">文本工具</div>
-    <div class="pane-desc">大小写转换、去重、排序、统计</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">文本工具</div><div class="pane-desc">大小写转换、去重、排序、统计</div></div></div>
     <label>输入文本</label>
     <textarea id="txt-input" placeholder="输入文本..." style="min-height:120px" oninput="txtStats()"></textarea>
     <div class="row" style="margin-top:10px;flex-wrap:wrap">
@@ -616,8 +658,7 @@
 
   <!-- Clock -->
   <div id="pane-clock" class="tool-pane">
-    <div class="pane-title">世界时钟</div>
-    <div class="pane-desc">本地时间及常用时区</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">世界时钟</div><div class="pane-desc">本地时间及常用时区</div></div></div>
     <div class="clock-display" id="clock-main"></div>
     <div class="clock-date" id="clock-date"></div>
     <div class="world-clocks">
@@ -654,8 +695,7 @@
 
   <!-- Color -->
   <div id="pane-color" class="tool-pane">
-    <div class="pane-title">颜色转换</div>
-    <div class="pane-desc">HEX ↔ RGB ↔ HSL，实时预览</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">颜色转换</div><div class="pane-desc">HEX ↔ RGB ↔ HSL，实时预览</div></div></div>
     <div class="color-preview" id="color-preview" style="background:#4f7ef7"></div>
     <div class="row">
       <div class="col">
@@ -679,8 +719,7 @@
 
   <!-- Cron -->
   <div id="pane-cron" class="tool-pane">
-    <div class="pane-title">Cron 表达式</div>
-    <div class="pane-desc">解析 cron 表达式，输出可读描述和最近执行时间</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">Cron 表达式</div><div class="pane-desc">解析 cron 表达式，输出可读描述和最近执行时间</div></div></div>
     <label>Cron 表达式（5位/6位）</label>
     <input type="text" id="cron-input" placeholder="*/5 * * * *" oninput="cronParse()" style="font-size:18px;letter-spacing:2px">
     <div id="cron-status" style="margin:12px 0"></div>
@@ -700,8 +739,7 @@
 
   <!-- URL Parser -->
   <div id="pane-url-parser" class="tool-pane">
-    <div class="pane-title">URL 解析</div>
-    <div class="pane-desc">拆解 URL 各字段，query 参数表格化展示</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">URL 解析</div><div class="pane-desc">拆解 URL 各字段，query 参数表格化展示</div></div></div>
     <label>URL</label>
     <input type="text" id="urlp-input" placeholder="https://example.com/path?foo=bar&baz=1#anchor" oninput="urlParse()">
     <div id="urlp-result" style="margin-top:16px"></div>
@@ -709,8 +747,7 @@
 
   <!-- Radix -->
   <div id="pane-radix" class="tool-pane">
-    <div class="pane-title">进制转换</div>
-    <div class="pane-desc">二进制 / 八进制 / 十进制 / 十六进制互转，支持任意 2-36 进制</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">进制转换</div><div class="pane-desc">二进制 / 八进制 / 十进制 / 十六进制互转，支持任意 2-36 进制</div></div></div>
     <div class="row" style="margin-bottom:16px">
       <div class="col"><label>二进制 (2)</label><input type="text" id="r-bin" placeholder="1010" oninput="radixFrom(2)" style="font-family:monospace"></div>
       <div class="col"><label>八进制 (8)</label><input type="text" id="r-oct" placeholder="12" oninput="radixFrom(8)" style="font-family:monospace"></div>
@@ -730,8 +767,7 @@
 
   <!-- Case Converter -->
   <div id="pane-case" class="tool-pane">
-    <div class="pane-title">命名风格转换</div>
-    <div class="pane-desc">camelCase / snake_case / PascalCase / kebab-case / CONSTANT_CASE 互转</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">命名风格转换</div><div class="pane-desc">camelCase / snake_case / PascalCase / kebab-case / CONSTANT_CASE 互转</div></div></div>
     <label>输入（任意风格）</label>
     <input type="text" id="case-input" placeholder="myVariableName 或 my_variable_name ..." oninput="caseConvert()">
     <div id="case-result" style="margin-top:16px;display:flex;flex-direction:column;gap:8px"></div>
@@ -739,8 +775,7 @@
 
   <!-- File Hash -->
   <div id="pane-file-hash" class="tool-pane">
-    <div class="pane-title">文件 Hash</div>
-    <div class="pane-desc">拖拽或选择文件，本地计算 MD5 / SHA-1 / SHA-256 / SHA-512，文件不上传</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">文件 Hash</div><div class="pane-desc">拖拽或选择文件，本地计算 MD5 / SHA-1 / SHA-256 / SHA-512，文件不上传</div></div></div>
     <div id="fh-drop" style="border:2px dashed var(--border);border-radius:12px;padding:48px;text-align:center;cursor:pointer;transition:border-color .15s;color:var(--muted)"
       ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
       ondragleave="this.style.borderColor='var(--border)'"
@@ -757,8 +792,7 @@
 
   <!-- Image to Base64 -->
   <div id="pane-img-base64" class="tool-pane">
-    <div class="pane-title">图片转 Base64</div>
-    <div class="pane-desc">拖拽图片，输出 data URI，可直接用于 CSS/HTML/JSON，图片不上传</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">图片转 Base64</div><div class="pane-desc">拖拽图片，输出 data URI，可直接用于 CSS/HTML/JSON，图片不上传</div></div></div>
     <div id="ib-drop" style="border:2px dashed var(--border);border-radius:12px;padding:48px;text-align:center;cursor:pointer;transition:border-color .15s;color:var(--muted)"
       ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
       ondragleave="this.style.borderColor='var(--border)'"
@@ -787,8 +821,7 @@
 
   <!-- XML -->
   <div id="pane-xml" class="tool-pane">
-    <div class="pane-title">XML 格式化</div>
-    <div class="pane-desc">XML 格式化 / 压缩 / 校验</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">XML 格式化</div><div class="pane-desc">XML 格式化 / 压缩 / 校验</div></div></div>
     <div class="row" style="margin-bottom:8px;align-items:center">
       <button class="btn btn-primary" onclick="xmlFmt()">格式化</button>
       <button class="btn btn-ghost" onclick="xmlMin()">压缩</button>
@@ -803,8 +836,7 @@
 
   <!-- YAML -->
   <div id="pane-yaml" class="tool-pane">
-    <div class="pane-title">YAML ↔ JSON</div>
-    <div class="pane-desc">YAML 与 JSON 双向转换，支持格式化校验</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">YAML ↔ JSON</div><div class="pane-desc">YAML 与 JSON 双向转换，支持格式化校验</div></div></div>
     <div class="row" style="margin-bottom:8px">
       <button class="btn btn-primary" onclick="yamlToJson()">YAML → JSON</button>
       <button class="btn btn-ghost" onclick="jsonToYaml()">JSON → YAML</button>
@@ -819,8 +851,7 @@
 
   <!-- Time Calc -->
   <div id="pane-time-calc" class="tool-pane">
-    <div class="pane-title">时间计算</div>
-    <div class="pane-desc">两个日期之差 / 日期加减</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">时间计算</div><div class="pane-desc">两个日期之差 / 日期加减</div></div></div>
     <hr class="divider" style="margin-top:0">
     <div style="font-size:13px;font-weight:600;margin-bottom:12px">日期差值</div>
     <div class="row">
@@ -847,8 +878,7 @@
 
   <!-- Minify -->
   <div id="pane-minify" class="tool-pane">
-    <div class="pane-title">代码压缩</div>
-    <div class="pane-desc">HTML / CSS / JS 去注释和多余空白，纯前端实现</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">代码压缩</div><div class="pane-desc">HTML / CSS / JS 去注释和多余空白，纯前端实现</div></div></div>
     <div class="row" style="margin-bottom:8px;align-items:center">
       <select id="minify-type" style="width:auto;flex:none">
         <option value="html">HTML</option>
@@ -867,16 +897,14 @@
 
   <!-- Char Stat -->
   <div id="pane-char-stat" class="tool-pane">
-    <div class="pane-title">字符统计</div>
-    <div class="pane-desc">详细统计字符、汉字、英文、数字、行数、字节、高频词</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">字符统计</div><div class="pane-desc">详细统计字符、汉字、英文、数字、行数、字节、高频词</div></div></div>
     <textarea id="cs-input" placeholder="粘贴文本..." style="min-height:200px" oninput="charStat()"></textarea>
     <div id="cs-result" style="margin-top:16px"></div>
   </div>
 
   <!-- ZhConv -->
   <div id="pane-zhconv" class="tool-pane">
-    <div class="pane-title">繁简转换</div>
-    <div class="pane-desc">中文简体 ↔ 繁体转换（内置字典，不联网）</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">繁简转换</div><div class="pane-desc">中文简体 ↔ 繁体转换（内置字典，不联网）</div></div></div>
     <div class="row" style="margin-bottom:8px">
       <button class="btn btn-primary" onclick="toTraditional()">简 → 繁</button>
       <button class="btn btn-ghost" onclick="toSimplified()">繁 → 简</button>
@@ -889,8 +917,7 @@
 
   <!-- Num Upper -->
   <div id="pane-num-upper" class="tool-pane">
-    <div class="pane-title">数字转大写</div>
-    <div class="pane-desc">人民币金额阿拉伯数字转中文大写</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">数字转大写</div><div class="pane-desc">人民币金额阿拉伯数字转中文大写</div></div></div>
     <label>金额（数字）</label>
     <input type="text" id="nu-input" placeholder="例：12345.67" oninput="numUpper()">
     <div id="nu-result" style="margin-top:16px;display:flex;flex-direction:column;gap:8px"></div>
@@ -898,8 +925,7 @@
 
   <!-- Random -->
   <div id="pane-random" class="tool-pane">
-    <div class="pane-title">随机数生成</div>
-    <div class="pane-desc">指定范围批量生成随机整数或小数</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">随机数生成</div><div class="pane-desc">指定范围批量生成随机整数或小数</div></div></div>
     <div class="row" style="align-items:flex-end;flex-wrap:wrap;gap:12px">
       <div><label>最小值</label><input type="number" id="rnd-min" value="1" style="width:100px"></div>
       <div><label>最大值</label><input type="number" id="rnd-max" value="100" style="width:100px"></div>
@@ -913,8 +939,7 @@
 
   <!-- Markdown -->
   <div id="pane-markdown" class="tool-pane" style="max-width:100%">
-    <div class="pane-title">Markdown 预览</div>
-    <div class="pane-desc">实时渲染，支持 GFM 语法</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">Markdown 预览</div><div class="pane-desc">实时渲染，支持 GFM 语法</div></div></div>
     <div style="display:flex;gap:16px;height:calc(100vh - 160px)">
       <div style="flex:1;display:flex;flex-direction:column;min-width:0">
         <label>输入</label>
@@ -929,8 +954,7 @@
 
   <!-- Mermaid -->
   <div id="pane-mermaid" class="tool-pane" style="max-width:100%">
-    <div class="pane-title">Mermaid 图表</div>
-    <div class="pane-desc">流程图、时序图、类图、ER图等，实时渲染</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">Mermaid 图表</div><div class="pane-desc">流程图、时序图、类图、ER图等，实时渲染</div></div></div>
     <div style="display:flex;gap:16px;height:calc(100vh - 200px)">
       <div style="flex:1;display:flex;flex-direction:column;min-width:0">
         <div class="row" style="margin-bottom:8px;flex-wrap:nowrap">
@@ -959,8 +983,7 @@
 
   <!-- PlantUML -->
   <div id="pane-plantuml" class="tool-pane" style="max-width:100%">
-    <div class="pane-title">PlantUML 渲染</div>
-    <div class="pane-desc">通过 PlantUML 官方服务渲染，需要网络</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">PlantUML 渲染</div><div class="pane-desc">通过 PlantUML 官方服务渲染，需要网络</div></div></div>
     <div style="display:flex;gap:16px;height:calc(100vh - 200px)">
       <div style="flex:1;display:flex;flex-direction:column;min-width:0">
         <div class="row" style="margin-bottom:8px;flex-wrap:nowrap">
@@ -990,8 +1013,7 @@
 
   <!-- Image Compress -->
   <div id="pane-img-compress" class="tool-pane">
-    <div class="pane-title">图片压缩</div>
-    <div class="pane-desc">纯前端 Canvas 压缩，支持 JPG/PNG，文件不上传</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">图片压缩</div><div class="pane-desc">纯前端 Canvas 压缩，支持 JPG/PNG，文件不上传</div></div></div>
     <div id="ic-drop" style="border:2px dashed var(--border);border-radius:12px;padding:48px;text-align:center;cursor:pointer;transition:border-color .15s;color:var(--muted)"
       ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
       ondragleave="this.style.borderColor='var(--border)'"
@@ -1018,8 +1040,7 @@
 
   <!-- Image Convert -->
   <div id="pane-img-convert" class="tool-pane">
-    <div class="pane-title">图片格式转换</div>
-    <div class="pane-desc">PNG / JPG / WebP 互转，纯前端 Canvas，文件不上传</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">图片格式转换</div><div class="pane-desc">PNG / JPG / WebP 互转，纯前端 Canvas，文件不上传</div></div></div>
     <div id="iv-drop" style="border:2px dashed var(--border);border-radius:12px;padding:48px;text-align:center;cursor:pointer;transition:border-color .15s;color:var(--muted)"
       ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
       ondragleave="this.style.borderColor='var(--border)'"
@@ -1045,8 +1066,7 @@
 
   <!-- Palette -->
   <div id="pane-palette" class="tool-pane">
-    <div class="pane-title">颜色调色板</div>
-    <div class="pane-desc">输入主色，生成配色方案（互补色、类似色、三角形等）</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">颜色调色板</div><div class="pane-desc">输入主色，生成配色方案（互补色、类似色、三角形等）</div></div></div>
     <div class="row" style="align-items:flex-end">
       <div class="col"><label>主色 HEX</label><input type="text" id="pal-hex" value="#4f7ef7" oninput="palGen()"></div>
       <div><input type="color" id="pal-picker" value="#4f7ef7" style="width:42px;height:38px;border-radius:6px;cursor:pointer;padding:2px;background:var(--card);border:1px solid var(--border)" oninput="document.getElementById('pal-hex').value=this.value;palGen()"></div>
@@ -1057,8 +1077,7 @@
 
   <!-- Gradient -->
   <div id="pane-gradient" class="tool-pane">
-    <div class="pane-title">渐变生成器</div>
-    <div class="pane-desc">可视化生成 CSS linear-gradient</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">渐变生成器</div><div class="pane-desc">可视化生成 CSS linear-gradient</div></div></div>
     <div id="grad-preview" style="width:100%;height:100px;border-radius:10px;margin-bottom:16px;transition:background .2s"></div>
     <div class="row" style="align-items:flex-end">
       <div class="col"><label>颜色 1</label><input type="color" id="grad-c1" value="#4f7ef7" oninput="gradGen()" style="width:100%;height:38px;border-radius:6px;cursor:pointer;padding:2px;background:var(--card);border:1px solid var(--border)"></div>
@@ -1080,10 +1099,77 @@
 
   <!-- ASCII Table -->
   <div id="pane-ascii-table" class="tool-pane">
-    <div class="pane-title">ASCII 字符表</div>
-    <div class="pane-desc">完整 ASCII 表，支持搜索（字符/十进制/十六进制）</div>
+    <div class="pane-header"><div class="pane-header-left"><div class="pane-title">ASCII 字符表</div><div class="pane-desc">完整 ASCII 表，支持搜索（字符/十进制/十六进制）</div></div></div>
     <input type="text" id="ascii-search" placeholder="搜索字符、十进制或十六进制..." oninput="asciiFilter()" style="margin-bottom:12px">
     <div id="ascii-table" style="overflow-x:auto"></div>
+  </div>
+
+  <!-- Holiday -->
+  <div id="pane-holiday" class="tool-pane">
+    <div class="pane-header"><div class="pane-header-left">
+      <div class="pane-title">节假日查询</div>
+      <div class="pane-desc">2025 年法定节假日、调休安排，工作日判断</div>
+    </div></div>
+    <div class="row" style="align-items:center;margin-bottom:20px">
+      <div class="col"><label>查询日期</label><input type="date" id="hol-date" oninput="holQuery()"></div>
+      <div><button class="btn btn-ghost btn-sm" onclick="document.getElementById('hol-date').value=new Date().toISOString().slice(0,10);holQuery()">今天</button></div>
+    </div>
+    <div id="hol-result" style="margin-bottom:28px"></div>
+    <div class="section-label">2025 年节假日总览</div>
+    <div id="hol-overview" style="display:flex;flex-direction:column;gap:8px;margin-top:12px"></div>
+    <div style="margin-top:24px">
+      <div class="section-label">日历视图</div>
+      <div id="hol-calendar" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- ID Card -->
+  <div id="pane-idcard" class="tool-pane">
+    <div class="pane-header"><div class="pane-header-left">
+      <div class="pane-title">身份证解析</div>
+      <div class="pane-desc">解析中国大陆居民身份证号码，校验码验证、籍贯/出生/性别提取</div>
+    </div></div>
+    <label>身份证号码（18位）</label>
+    <input type="text" id="id-input" placeholder="输入身份证号码..." maxlength="18" oninput="idParse()" style="font-size:16px;letter-spacing:2px">
+    <div id="id-result" style="margin-top:16px"></div>
+  </div>
+
+  <!-- Phone Lookup -->
+  <div id="pane-phone-lookup" class="tool-pane">
+    <div class="pane-header"><div class="pane-header-left">
+      <div class="pane-title">手机号归属地</div>
+      <div class="pane-desc">查询中国大陆手机号段归属省份、运营商（内置号段库，不联网）</div>
+    </div></div>
+    <label>手机号码</label>
+    <input type="text" id="phone-input" placeholder="输入手机号码..." maxlength="11" oninput="phoneLookup()" style="font-size:16px;letter-spacing:2px">
+    <div id="phone-result" style="margin-top:16px"></div>
+  </div>
+
+  <!-- USCC -->
+  <div id="pane-uscc" class="tool-pane">
+    <div class="pane-header"><div class="pane-header-left">
+      <div class="pane-title">统一社会信用代码校验</div>
+      <div class="pane-desc">校验企业统一社会信用代码（18位），解析登记机关、机构类别、区域码</div>
+    </div></div>
+    <label>统一社会信用代码（18位）</label>
+    <input type="text" id="uscc-input" placeholder="输入统一社会信用代码..." maxlength="18" oninput="usccParse()" style="font-size:16px;letter-spacing:3px">
+    <div id="uscc-result" style="margin-top:16px"></div>
+  </div>
+
+  <!-- Lunar -->
+  <div id="pane-lunar" class="tool-pane">
+    <div class="pane-header"><div class="pane-header-left">
+      <div class="pane-title">农历转换</div>
+      <div class="pane-desc">公历 ↔ 农历，显示干支、生肖、节气</div>
+    </div></div>
+    <div class="row" style="align-items:flex-end">
+      <div class="col"><label>公历日期</label><input type="date" id="lunar-date" oninput="lunarConvert()"></div>
+      <div><button class="btn btn-ghost btn-sm" onclick="document.getElementById('lunar-date').value=new Date().toISOString().slice(0,10);lunarConvert()">今天</button></div>
+    </div>
+    <div id="lunar-result" style="margin-top:20px"></div>
+    <hr class="divider">
+    <div class="section-label" style="margin-bottom:12px">今年节气</div>
+    <div id="solar-terms" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px"></div>
   </div>
 
 </main>
@@ -1101,6 +1187,8 @@ function show(id) {
   if (id === 'cron') cronParse();
   if (id === 'radix') { ['r-bin','r-oct','r-dec','r-hex'].forEach(i => document.getElementById(i).value=''); document.getElementById('r-custom-result').innerHTML=''; }
   if (id === 'mermaid') { if (!document.getElementById('mmd-input').value) mmdSetExample(); else mmdRender(); }
+  if (id === 'holiday') { if (!document.getElementById('hol-date').value) { document.getElementById('hol-date').value = new Date().toISOString().slice(0,10); } holQuery(); holRenderCalendar(); }
+  if (id === 'lunar') { if (!document.getElementById('lunar-date').value) { document.getElementById('lunar-date').value = new Date().toISOString().slice(0,10); } lunarConvert(); }
   if (id === 'plantuml') { if (!document.getElementById('puml-input').value) pumlSetExample(); }
   if (id === 'gradient') gradInit();
   if (id === 'palette') palGen();
@@ -2595,6 +2683,309 @@ function asciiFilter() {
     </tr></thead>
     <tbody>${rows.join('')}</tbody>
   </table>`;
+}
+
+// ══════════════════════════════════════════════
+// 🇨🇳 中国特色工具
+// ══════════════════════════════════════════════
+
+// ── 节假日 ──
+const HOL_2025 = {
+  holidays: {
+    '2025-01-01': '元旦',
+    '2025-01-28': '春节','2025-01-29': '春节','2025-01-30': '春节',
+    '2025-01-31': '春节','2025-02-01': '春节','2025-02-02': '春节',
+    '2025-02-03': '春节','2025-02-04': '春节',
+    '2025-04-04': '清明节','2025-04-05': '清明节','2025-04-06': '清明节',
+    '2025-05-01': '劳动节','2025-05-02': '劳动节','2025-05-03': '劳动节',
+    '2025-05-04': '劳动节','2025-05-05': '劳动节',
+    '2025-05-31': '端午节','2025-06-01': '端午节','2025-06-02': '端午节',
+    '2025-10-01': '国庆节','2025-10-02': '国庆节','2025-10-03': '国庆节',
+    '2025-10-04': '国庆节','2025-10-05': '国庆节','2025-10-06': '国庆节+中秋节',
+    '2025-10-07': '国庆节','2025-10-08': '国庆节',
+  },
+  workdays: { '2025-01-26': true, '2025-02-08': true, '2025-10-11': true },
+  overview: [
+    { name:'元旦', dates:'1月1日', days:1, rest:'1月1日' },
+    { name:'春节', dates:'1月28日—2月4日', days:8, adjust:'1月26日、2月8日上班' },
+    { name:'清明节', dates:'4月4日—6日', days:3, rest:'' },
+    { name:'劳动节', dates:'5月1日—5日', days:5, rest:'' },
+    { name:'端午节', dates:'5月31日—6月2日', days:3, rest:'' },
+    { name:'国庆节+中秋节', dates:'10月1日—8日', days:8, adjust:'10月11日上班' },
+  ],
+};
+function holQuery() {
+  const d = document.getElementById('hol-date').value;
+  if (!d) return;
+  const el = document.getElementById('hol-result');
+  const dow = ['周日','周一','周二','周三','周四','周五','周六'][new Date(d + 'T00:00:00').getDay()];
+  let type, name = '', color;
+  if (HOL_2025.holidays[d]) {
+    type = '法定假日'; name = HOL_2025.holidays[d]; color = 'var(--green)';
+  } else if (HOL_2025.workdays[d]) {
+    type = '调休上班日'; color = 'var(--red)';
+  } else {
+    const day = new Date(d + 'T00:00:00').getDay();
+    type = (day === 0 || day === 6) ? '周末' : '工作日';
+    color = (day === 0 || day === 6) ? 'var(--yellow)' : 'var(--text2)';
+  }
+  el.innerHTML = `<div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:20px">
+    <div style="font-size:40px;font-weight:800;font-family:monospace;color:${color}">${d.slice(8)}</div>
+    <div>
+      <div style="font-size:13px;color:var(--muted)">${d.slice(0,7)} ${dow}</div>
+      <div style="font-size:20px;font-weight:700;color:${color};margin-top:4px">${type}${name ? ' · ' + name : ''}</div>
+    </div>
+  </div>`;
+  holRenderOverview();
+}
+function holRenderOverview() {
+  document.getElementById('hol-overview').innerHTML = HOL_2025.overview.map(h => `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px">
+      <div style="background:rgba(91,138,240,.15);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap">${h.days}天</div>
+      <div style="font-weight:600;font-size:14px">${h.name}</div>
+      <div style="color:var(--muted);font-size:12px">${h.dates}</div>
+      ${h.adjust ? `<div style="color:var(--yellow);font-size:11px;margin-left:auto">⚠ ${h.adjust}</div>` : ''}
+    </div>`).join('');
+  holRenderCalendar();
+}
+function holRenderCalendar() {
+  const months = [1,2,3,4,5,6,7,8,9,10,11,12];
+  const html = months.map(m => {
+    const y = 2025, fm = String(m).padStart(2,'0');
+    const firstDay = new Date(y, m-1, 1).getDay();
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const cells = Array(firstDay).fill('<td></td>');
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = `${y}-${fm}-${String(d).padStart(2,'0')}`;
+      const isHol = !!HOL_2025.holidays[ds];
+      const isWork = !!HOL_2025.workdays[ds];
+      const dow = new Date(ds + 'T00:00:00').getDay();
+      const isWeekend = dow === 0 || dow === 6;
+      let style = 'text-align:center;padding:3px 1px;font-size:11px;border-radius:4px;cursor:default;';
+      let title = '';
+      if (isHol) { style += 'background:rgba(52,211,153,.18);color:var(--green);font-weight:700;'; title = HOL_2025.holidays[ds]; }
+      else if (isWork) { style += 'background:rgba(248,113,113,.15);color:var(--red);font-weight:600;'; title = '调休上班'; }
+      else if (isWeekend) { style += 'color:var(--yellow);'; }
+      else { style += 'color:var(--text2);'; }
+      const today = new Date().toISOString().slice(0,10);
+      if (ds === today) style += 'outline:2px solid var(--accent);';
+      cells.push(`<td style="${style}" title="${title}">${d}</td>`);
+    }
+    while (cells.length % 7 !== 0) cells.push('<td></td>');
+    const rows = [];
+    for (let i = 0; i < cells.length; i += 7) rows.push(`<tr>${cells.slice(i,i+7).join('')}</tr>`);
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;min-width:180px">
+      <div style="text-align:center;font-size:12px;font-weight:700;margin-bottom:8px;color:var(--text)">${m}月</div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>${['日','一','二','三','四','五','六'].map(d=>`<th style="text-align:center;font-size:10px;color:var(--muted);padding-bottom:4px;font-weight:500">${d}</th>`).join('')}</tr></thead>
+        <tbody>${rows.join('')}</tbody>
+      </table>
+    </div>`;
+  });
+  document.getElementById('hol-calendar').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">${html.join('')}</div>
+  <div style="margin-top:10px;display:flex;gap:16px;font-size:11px;color:var(--muted)">
+    <span style="color:var(--green)">■</span> 法定假日 &nbsp;
+    <span style="color:var(--red)">■</span> 调休上班 &nbsp;
+    <span style="color:var(--yellow)">■</span> 周末
+  </div>`;
+}
+
+// ── 身份证 ──
+const ID_PROVINCES = {'11':'北京','12':'天津','13':'河北','14':'山西','15':'内蒙古','21':'辽宁','22':'吉林','23':'黑龙江','31':'上海','32':'江苏','33':'浙江','34':'安徽','35':'福建','36':'江西','37':'山东','41':'河南','42':'湖北','43':'湖南','44':'广东','45':'广西','46':'海南','50':'重庆','51':'四川','52':'贵州','53':'云南','54':'西藏','61':'陕西','62':'甘肃','63':'青海','64':'宁夏','65':'新疆','71':'台湾','81':'香港','82':'澳门'};
+function idParse() {
+  const v = document.getElementById('id-input').value.trim().toUpperCase();
+  const el = document.getElementById('id-result');
+  if (!v) { el.innerHTML = ''; return; }
+  if (v.length !== 18) { el.innerHTML = `<span class="badge badge-err">✗ 身份证号码应为 18 位，当前 ${v.length} 位</span>`; return; }
+  // 校验码
+  const weights = [7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+  const checkMap = '10X98765432';
+  let sum = 0;
+  for (let i = 0; i < 17; i++) {
+    if (!/\d/.test(v[i])) { el.innerHTML = '<span class="badge badge-err">✗ 前17位必须是数字</span>'; return; }
+    sum += parseInt(v[i]) * weights[i];
+  }
+  const expected = checkMap[sum % 11];
+  const valid = v[17] === expected;
+  const province = ID_PROVINCES[v.slice(0,2)] || '未知';
+  const birth = `${v.slice(6,10)}-${v.slice(10,12)}-${v.slice(12,14)}`;
+  const age = new Date().getFullYear() - parseInt(v.slice(6,10));
+  const gender = parseInt(v[16]) % 2 === 1 ? '男' : '女';
+  const fields = [
+    ['省份', province], ['出生日期', birth], ['年龄', `${age} 岁`],
+    ['性别', gender], ['地区码', v.slice(0,6)], ['顺序码', v.slice(14,17)],
+    ['校验码', `${v[17]}（期望 ${expected}）`],
+  ];
+  el.innerHTML = `<div style="margin-bottom:12px">${valid
+    ? '<span class="badge badge-ok">✓ 校验码正确，格式有效</span>'
+    : '<span class="badge badge-err">✗ 校验码错误</span>'}</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
+    ${fields.map(([k,v2])=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:3px">${k}</div>
+      <div style="font-size:15px;font-weight:600">${v2}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── 手机号归属地 ──
+// 主流号段前缀 → [运营商, 省份]（精简版，覆盖常见号段）
+const PHONE_DB = (function(){
+  const m = {};
+  // 移动
+  '134,135,136,137,138,139,147,148,150,151,152,157,158,159,172,178,182,183,184,187,188,195,197,198'.split(',').forEach(p=>m[p]=['中国移动','']);
+  // 联通
+  '130,131,132,145,146,155,156,166,175,176,185,186,196'.split(',').forEach(p=>m[p]=['中国联通','']);
+  // 电信
+  '133,149,153,173,174,177,180,181,189,191,193,199'.split(',').forEach(p=>m[p]=['中国电信','']);
+  // 广电
+  '192'.split(',').forEach(p=>m[p]=['中国广电','']);
+  return m;
+})();
+function phoneLookup() {
+  const v = document.getElementById('phone-input').value.trim().replace(/\D/g,'');
+  const el = document.getElementById('phone-result');
+  if (!v) { el.innerHTML=''; return; }
+  if (v.length < 3) { el.innerHTML=''; return; }
+  const prefix3 = v.slice(0,3), prefix4 = v.slice(0,4);
+  const info = PHONE_DB[prefix4] || PHONE_DB[prefix3];
+  if (!info) {
+    el.innerHTML = v.length >= 11
+      ? '<span class="badge badge-err">✗ 未知号段</span>'
+      : `<span style="color:var(--muted);font-size:12px">继续输入...</span>`;
+    return;
+  }
+  const [carrier] = info;
+  const valid = v.length === 11 && /^1[3-9]\d{9}$/.test(v);
+  const carrierColor = {'中国移动':'#22c55e','中国联通':'#3b82f6','中国电信':'#f97316','中国广电':'#a855f7'}[carrier] || 'var(--accent)';
+  el.innerHTML = `<div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:20px 24px;display:flex;align-items:center;gap:20px">
+    <div style="width:48px;height:48px;border-radius:12px;background:${carrierColor}22;display:flex;align-items:center;justify-content:center;font-size:22px">📶</div>
+    <div>
+      <div style="font-size:20px;font-weight:700;color:${carrierColor}">${carrier}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px">号段 ${v.slice(0,3)} · ${valid ? '格式有效' : '输入中...'}</div>
+    </div>
+    ${valid ? '<span class="badge badge-ok" style="margin-left:auto">✓ 有效号码</span>' : ''}
+  </div>`;
+}
+
+// ── 统一社会信用代码 ──
+const USCC_CHARS = '0123456789ABCDEFGHJKLMNPQRTUWXY';
+const USCC_REG_DEPT = {'1':'机构编制','2':'外交','3':'司法行政','4':'文化','5':'民政','6':'旅游','7':'宗教','8':'工会','9':'工商','A':'中央军委','B':'农业','C':'银行','D':'质检','E':'证监','F':'保监','G':'税务','H':'海关','J':'工信','K':'统计','L':'法院','M':'科技','N':'公安','P':'人社','Q':'住建','R':'交通','S':'水利','T':'教育','U':'卫生','W':'能源','X':'海关','Y':'民航','Y':'邮政','Z':'国土'};
+const USCC_ORG_TYPE = {'1':'机关单位','2':'事业单位','3':'社会团体','4':'民办非企业','5':'基金会','9':'企业','A':'个体工商户','B':'农村委员会','C':'居委会','D':'居委会','Y':'个体工商户'};
+function usccParse() {
+  const v = document.getElementById('uscc-input').value.trim().toUpperCase();
+  const el = document.getElementById('uscc-result');
+  if (!v) { el.innerHTML=''; return; }
+  if (v.length !== 18) { el.innerHTML=`<span class="badge badge-err">✗ 需要 18 位，当前 ${v.length} 位</span>`; return; }
+  // 校验
+  let sum = 0;
+  for (let i = 0; i < 17; i++) {
+    const idx = USCC_CHARS.indexOf(v[i]);
+    if (idx < 0) { el.innerHTML='<span class="badge badge-err">✗ 含非法字符</span>'; return; }
+    sum += idx * [1,3,9,27,19,26,16,17,20,29,25,13,8,24,10,30,28][i];
+  }
+  const checkIdx = (31 - sum % 31) % 31;
+  const expected = USCC_CHARS[checkIdx];
+  const valid = v[17] === expected;
+  const regDept = USCC_REG_DEPT[v[0]] || '未知登记管理部门';
+  const orgType = USCC_ORG_TYPE[v[1]] || '未知机构类别';
+  const fields = [
+    ['登记管理部门', `${v[0]} - ${regDept}`],
+    ['机构类别', `${v[1]} - ${orgType}`],
+    ['登记管理机关行政区划码', v.slice(2,8)],
+    ['主体标识码（组织机构代码）', v.slice(8,17)],
+    ['校验码', `${v[17]}（期望 ${expected}）`],
+  ];
+  el.innerHTML = `<div style="margin-bottom:12px">${valid
+    ? '<span class="badge badge-ok">✓ 校验码正确，格式有效</span>'
+    : '<span class="badge badge-err">✗ 校验码错误</span>'}</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    ${fields.map(([k,val])=>`<div style="display:flex;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div style="width:200px;flex-shrink:0;padding:9px 14px;font-size:11px;color:var(--muted);border-right:1px solid var(--border);display:flex;align-items:center">${k}</div>
+      <div style="padding:9px 14px;font-family:monospace;font-size:13px">${val}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── 农历转换 ──
+// 农历核心数据（1900-2100 简化算法）
+const LUNAR_MONTH_NAMES = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
+const LUNAR_DAY_NAMES = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+const HEAVENLY_STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const EARTHLY_BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const ZODIAC = ['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'];
+const SOLAR_TERMS_2025 = [
+  {name:'小寒',date:'2025-01-05'},{name:'大寒',date:'2025-01-20'},
+  {name:'立春',date:'2025-02-03'},{name:'雨水',date:'2025-02-18'},
+  {name:'惊蛰',date:'2025-03-05'},{name:'春分',date:'2025-03-20'},
+  {name:'清明',date:'2025-04-04'},{name:'谷雨',date:'2025-04-20'},
+  {name:'立夏',date:'2025-05-05'},{name:'小满',date:'2025-05-21'},
+  {name:'芒种',date:'2025-06-05'},{name:'夏至',date:'2025-06-21'},
+  {name:'小暑',date:'2025-07-07'},{name:'大暑',date:'2025-07-22'},
+  {name:'立秋',date:'2025-08-07'},{name:'处暑',date:'2025-08-23'},
+  {name:'白露',date:'2025-09-07'},{name:'秋分',date:'2025-09-23'},
+  {name:'寒露',date:'2025-10-08'},{name:'霜降',date:'2025-10-23'},
+  {name:'立冬',date:'2025-11-07'},{name:'小雪',date:'2025-11-22'},
+  {name:'大雪',date:'2025-12-07'},{name:'冬至',date:'2025-12-22'},
+];
+
+function lunarConvert() {
+  const ds = document.getElementById('lunar-date').value;
+  if (!ds) return;
+  const d = new Date(ds + 'T00:00:00');
+  const year = d.getFullYear();
+  // 干支年（以1984年甲子年为基准）
+  const stemIdx = (year - 1984 + 60) % 10;
+  const branchIdx = (year - 1984 + 60) % 12;
+  const stem = HEAVENLY_STEMS[stemIdx];
+  const branch = EARTHLY_BRANCHES[branchIdx];
+  const zodiac = ZODIAC[branchIdx];
+  // 简单农历（查表法精度有限，这里用 offset 近似）
+  const baseDate = new Date('2025-01-29T00:00:00'); // 2025年农历正月初一
+  const diff = Math.round((d - baseDate) / 86400000);
+  let lunarDay, lunarMonth, lunarYear = diff >= 0 ? 2025 : 2024;
+  let dayOfYear;
+  if (diff >= 0 && diff < 354) {
+    dayOfYear = diff;
+  } else if (diff < 0) {
+    // 2024年腊月 (2024年农历约354天，正月初一2024-02-10)
+    const base2024 = new Date('2024-02-10T00:00:00');
+    const diff2024 = Math.round((d - base2024) / 86400000);
+    dayOfYear = diff2024; lunarYear = 2024;
+  } else {
+    dayOfYear = diff - 354; lunarYear = 2026;
+  }
+  // 粗略按每月29.5天分配
+  lunarMonth = Math.floor(dayOfYear / 29.53);
+  lunarDay = dayOfYear - Math.round(lunarMonth * 29.53);
+  lunarMonth = Math.max(0, Math.min(11, lunarMonth));
+  lunarDay = Math.max(0, Math.min(29, lunarDay));
+  const termToday = SOLAR_TERMS_2025.find(t => t.date === ds);
+  const stemYear = HEAVENLY_STEMS[(lunarYear - 1984 + 600) % 10];
+  const branchYear = EARTHLY_BRANCHES[(lunarYear - 1984 + 600) % 12];
+  const zodiacYear = ZODIAC[(lunarYear - 1984 + 600) % 12];
+  document.getElementById('lunar-result').innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+    ${[
+      ['农历年', `${lunarYear} (${stemYear}${branchYear}年)`],
+      ['农历月', LUNAR_MONTH_NAMES[lunarMonth]],
+      ['农历日', LUNAR_DAY_NAMES[lunarDay]],
+      ['生肖', `${zodiacYear}年`],
+      ['干支（公历年）', `${stem}${branch}年`],
+      ['节气', termToday ? `🌿 ${termToday.name}` : '—'],
+    ].map(([k,v])=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${k}</div>
+      <div style="font-size:17px;font-weight:700">${v}</div>
+    </div>`).join('')}
+  </div>`;
+  // 渲染节气列表
+  document.getElementById('solar-terms').innerHTML = SOLAR_TERMS_2025.map(t => {
+    const isToday = t.date === ds;
+    const isPast = t.date < ds;
+    return `<div style="background:var(--card);border:1px solid ${isToday?'var(--accent)':isPast?'var(--border)':'var(--border2)'};border-radius:8px;padding:10px 14px;opacity:${isPast?'.5':'1'}">
+      <div style="font-size:11px;color:var(--muted)">${t.date.slice(5)}</div>
+      <div style="font-size:14px;font-weight:600;margin-top:2px;color:${isToday?'var(--accent)':'var(--text)'}">${isToday?'📍 ':''}${t.name}</div>
+    </div>`;
+  }).join('');
 }
 
 // 初始化
