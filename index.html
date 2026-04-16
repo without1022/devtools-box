@@ -2818,7 +2818,7 @@ function holRenderCalendar() {
       const isToday = ds === today;
       const title = isHol ? hol.holidays[ds] : isWork ? '调休上班' : '';
 
-      let cellStyle = 'display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;margin:0 auto;font-size:12px;cursor:default;transition:background .1s;';
+      let cellStyle = 'display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;margin:0 auto;font-size:13px;cursor:default;transition:background .1s;';
       if (isToday) {
         cellStyle += 'background:var(--accent);color:#fff;font-weight:700;box-shadow:0 0 0 3px rgba(91,138,240,.25);';
       } else if (isHol) {
@@ -2833,24 +2833,24 @@ function holRenderCalendar() {
       // 假日小角标
       let badge = '';
       if (isHol && !isToday) badge = '<span style="position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:var(--green)"></span>';
-      if (isWork && !isToday) badge = '<span style="position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:var(--red)"></span>';
-      cells.push(`<div style="position:relative;padding:2px 0" title="${title}"><div style="${cellStyle}">${d}</div>${badge}</div>`);
+      if (isWork && !isToday) badge = '<span style="position:absolute;top:2px;right:2px;width:5px;height:5px;border-radius:50%;background:var(--red)"></span>';
+      cells.push(`<div style="position:relative;padding:3px 0" title="${title}"><div style="${cellStyle}">${d}</div>${badge}</div>`);
     }
     // 7列grid
-    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 12px">
-      <div style="text-align:center;font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">${y}年${m}月</div>
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
-        ${['日','一','二','三','四','五','六'].map(w=>`<div style="text-align:center;font-size:10px;color:var(--muted);padding-bottom:6px;font-weight:500">${w}</div>`).join('')}
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 16px">
+      <div style="text-align:center;font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)">${y}年${m}月</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+        ${['日','一','二','三','四','五','六'].map(w=>`<div style="text-align:center;font-size:11px;color:var(--muted);padding-bottom:8px;font-weight:500">${w}</div>`).join('')}
         ${cells.join('')}
       </div>
     </div>`;
   });
-  document.getElementById('hol-calendar').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">${html.join('')}</div>
-  <div style="margin-top:12px;display:flex;gap:20px;font-size:11px;color:var(--muted);flex-wrap:wrap">
-    <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;border-radius:50%;background:var(--accent);display:inline-block"></span> 今天</span>
-    <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;border-radius:50%;background:rgba(52,211,153,.25);display:inline-block"></span> 法定假日</span>
-    <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;border-radius:50%;background:rgba(248,113,113,.2);display:inline-block"></span> 调休上班</span>
-    <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:14px;border-radius:50%;background:transparent;border:1px solid var(--yellow);display:inline-block"></span> 周末</span>
+  document.getElementById('hol-calendar').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">${html.join('')}</div>
+  <div style="margin-top:16px;display:flex;gap:20px;font-size:12px;color:var(--muted);flex-wrap:wrap">
+    <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:16px;border-radius:50%;background:var(--accent);display:inline-block"></span> 今天</span>
+    <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:16px;border-radius:50%;background:rgba(52,211,153,.3);display:inline-block"></span> 法定假日</span>
+    <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:16px;border-radius:50%;background:rgba(248,113,113,.25);display:inline-block"></span> 调休上班</span>
+    <span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:16px;border-radius:50%;background:transparent;border:1px solid var(--yellow);display:inline-block"></span> 周末</span>
   </div>`;
 }
 
