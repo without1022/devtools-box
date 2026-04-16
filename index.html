@@ -162,6 +162,7 @@
 
   <div class="nav-group-title">加密哈希</div>
   <div class="nav-item" onclick="show('hash')"><span class="icon">🔐</span> Hash 计算</div>
+  <div class="nav-item" onclick="show('jwt')"><span class="icon">🪙</span> JWT 解码</div>
 
   <div class="nav-group-title">生成器</div>
   <div class="nav-item" onclick="show('uuid')"><span class="icon">🆔</span> UUID</div>
@@ -335,6 +336,16 @@
       <button class="btn btn-ghost" onclick="hashClear()">清空</button>
     </div>
     <div id="hash-results" style="margin-top:16px;display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <!-- JWT -->
+  <div id="pane-jwt" class="tool-pane">
+    <div class="pane-title">JWT 解码</div>
+    <div class="pane-desc">解析 Header / Payload，显示过期状态，不验签，内容不离开浏览器</div>
+    <label>JWT Token</label>
+    <textarea id="jwt-input" placeholder="粘贴 JWT Token..." style="min-height:80px;word-break:break-all" oninput="jwtDecode()"></textarea>
+    <div id="jwt-status" style="margin:10px 0"></div>
+    <div id="jwt-parts" style="display:flex;flex-direction:column;gap:12px"></div>
   </div>
 
   <!-- UUID -->
@@ -676,6 +687,92 @@ function hashClear() { document.getElementById('hash-input').value=''; document.
 
 // MD5 实现
 function md5(s){function L(k,d){return(k<<d)|(k>>>(32-d))}function K(G,k){var I,d,F,H,x;F=(G&2147483648);H=(k&2147483648);I=(G&1073741824);d=(k&1073741824);x=(G&1073741823)+(k&1073741823);if(I&d){return(x^2147483648^F^H)}if(I|d){if(x&1073741824){return(x^3221225472^F^H)}else{return(x^1073741824^F^H)}}else{return(x^F^H)}}function r(G,k,d,H,F,x,q){G=K(G,K(K((k&d)|(~k&H),F),q));return K(L(G,x),k)}function q(G,k,d,H,F,x,q){G=K(G,K(K((k&H)|(d&~H),F),q));return K(L(G,x),k)}function p(G,k,d,H,F,x,y){G=K(G,K(K(k^d^H,F),y));return K(L(G,x),k)}function n(G,k,d,H,F,x,y){G=K(G,K(K(d^(k|~H),F),y));return K(L(G,x),k)}function u(G){var k="",F="",m,l;for(l=0;l<=3;l++){m=(G>>>(l*8))&255;F="0"+m.toString(16);k+=F.substr(F.length-2,2)}return k}var t=[],o,v,m,l,F,G,k,d,H;s=function(G){var k,F=G.length,d=F+8;var H=((d-(d%64))/64+1)*16;var t=new Array(H-1);var D=0;var B=0;while(B<F){k=((B-(B%4))/4);D=((B%4)*8);t[k]=(t[k]|(G.charCodeAt(B)<<D));B++}k=((B-(B%4))/4);D=((B%4)*8);t[k]=(t[k]|(128<<D));t[H-2]=F<<3;t[H-1]=F>>>29;return t}(s);F=1732584193;G=4023233417;k=2562383102;d=271733878;for(o=0;o<t.length;o+=16){v=F;m=G;l=k;H=d;F=r(F,G,k,d,t[o+0],7,3614090360);d=r(d,F,G,k,t[o+1],12,3905402710);k=r(k,d,F,G,t[o+2],17,606105819);G=r(G,k,d,F,t[o+3],22,3250441966);F=r(F,G,k,d,t[o+4],7,4118548399);d=r(d,F,G,k,t[o+5],12,1200080426);k=r(k,d,F,G,t[o+6],17,2821735955);G=r(G,k,d,F,t[o+7],22,4249261313);F=r(F,G,k,d,t[o+8],7,1770035416);d=r(d,F,G,k,t[o+9],12,2336552879);k=r(k,d,F,G,t[o+10],17,4294925233);G=r(G,k,d,F,t[o+11],22,2304563134);F=r(F,G,k,d,t[o+12],7,1804603682);d=r(d,F,G,k,t[o+13],12,4254626195);k=r(k,d,F,G,t[o+14],17,2792965006);G=r(G,k,d,F,t[o+15],22,1236535329);F=q(F,G,k,d,t[o+1],5,4129170786);d=q(d,F,G,k,t[o+6],9,3225465664);k=q(k,d,F,G,t[o+11],14,643717713);G=q(G,k,d,F,t[o+0],20,3921069994);F=q(F,G,k,d,t[o+5],5,3593408605);d=q(d,F,G,k,t[o+10],9,38016083);k=q(k,d,F,G,t[o+15],14,3634488961);G=q(G,k,d,F,t[o+4],20,3889429448);F=q(F,G,k,d,t[o+9],5,568446438);d=q(d,F,G,k,t[o+14],9,3275163606);k=q(k,d,F,G,t[o+3],14,4107603335);G=q(G,k,d,F,t[o+8],20,1163531501);F=q(F,G,k,d,t[o+13],5,2850285829);d=q(d,F,G,k,t[o+2],9,4243563512);k=q(k,d,F,G,t[o+7],14,1735328473);G=q(G,k,d,F,t[o+12],20,2368359562);F=p(F,G,k,d,t[o+5],4,4294588738);d=p(d,F,G,k,t[o+8],11,2272392833);k=p(k,d,F,G,t[o+11],16,1839030562);G=p(G,k,d,F,t[o+14],23,4259657740);F=p(F,G,k,d,t[o+1],4,2763975236);d=p(d,F,G,k,t[o+4],11,1272893353);k=p(k,d,F,G,t[o+7],16,4139469664);G=p(G,k,d,F,t[o+10],23,3200236656);F=p(F,G,k,d,t[o+13],4,681279174);d=p(d,F,G,k,t[o+0],11,3936430074);k=p(k,d,F,G,t[o+3],16,3572445317);G=p(G,k,d,F,t[o+6],23,76029189);F=p(F,G,k,d,t[o+9],4,3654602809);d=p(d,F,G,k,t[o+12],11,3873151461);k=p(k,d,F,G,t[o+15],16,530742520);G=p(G,k,d,F,t[o+2],23,3299628645);F=n(F,G,k,d,t[o+0],6,4096336452);d=n(d,F,G,k,t[o+7],10,1126891415);k=n(k,d,F,G,t[o+14],15,2878612391);G=n(G,k,d,F,t[o+5],21,4237533241);F=n(F,G,k,d,t[o+12],6,1700485571);d=n(d,F,G,k,t[o+3],10,2399980690);k=n(k,d,F,G,t[o+10],15,4293915773);G=n(G,k,d,F,t[o+1],21,2240044497);F=n(F,G,k,d,t[o+8],6,1873313359);d=n(d,F,G,k,t[o+15],10,4264355552);k=n(k,d,F,G,t[o+6],15,2734768916);G=n(G,k,d,F,t[o+13],21,1309151649);F=n(F,G,k,d,t[o+4],6,4149444226);d=n(d,F,G,k,t[o+11],10,3174756917);k=n(k,d,F,G,t[o+2],15,718787259);G=n(G,k,d,F,t[o+9],21,3951481745);F=K(F,v);G=K(G,m);k=K(k,l);d=K(d,H)}return(u(F)+u(G)+u(k)+u(d)).toLowerCase()}
+
+// ── JWT ──
+function jwtDecode() {
+  const raw = document.getElementById('jwt-input').value.trim();
+  const statusEl = document.getElementById('jwt-status');
+  const partsEl = document.getElementById('jwt-parts');
+  partsEl.innerHTML = '';
+  if (!raw) { statusEl.innerHTML = ''; return; }
+
+  const parts = raw.split('.');
+  if (parts.length !== 3) {
+    statusEl.innerHTML = '<span class="badge badge-err">✗ 不是有效的 JWT（需要三段 base64 以 . 分隔）</span>';
+    return;
+  }
+
+  function b64Decode(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    try { return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+    catch(e) { return null; }
+  }
+
+  const header = b64Decode(parts[0]);
+  const payload = b64Decode(parts[1]);
+
+  if (!header || !payload) {
+    statusEl.innerHTML = '<span class="badge badge-err">✗ Base64 解码失败</span>';
+    return;
+  }
+
+  // 过期状态
+  let expHtml = '';
+  if (payload.exp) {
+    const expMs = payload.exp * 1000;
+    const now = Date.now();
+    const diff = expMs - now;
+    if (diff < 0) {
+      const ago = fmtDuration(-diff);
+      expHtml = `<span class="badge badge-err">✗ 已过期（${ago}前）</span>`;
+    } else {
+      const left = fmtDuration(diff);
+      expHtml = `<span class="badge badge-ok">✓ 有效（剩余 ${left}）</span>`;
+    }
+  } else {
+    expHtml = '<span class="badge" style="background:var(--border);color:var(--muted)">无过期时间</span>';
+  }
+  statusEl.innerHTML = expHtml;
+
+  // 渲染各部分
+  function renderPart(title, color, obj, extra) {
+    const json = JSON.stringify(obj, null, 2);
+    // 时间戳字段转人话
+    const annotated = json.replace(/"(exp|iat|nbf)":\s*(\d+)/g, (m, k, v) => {
+      const d = new Date(Number(v) * 1000).toLocaleString('zh-CN', {hour12: false});
+      return `"${k}": ${v}  <span style="color:var(--muted);font-size:11px">// ${d}</span>`;
+    });
+    return `<div style="background:#12151e;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block"></span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">${title}</span>
+        ${extra || ''}
+        <button class="copy-btn" style="position:static;margin-left:auto" onclick="navigator.clipboard.writeText(${JSON.stringify(JSON.stringify(obj,null,2))})">复制</button>
+      </div>
+      <pre style="padding:12px;font-size:12px;font-family:'SF Mono','Fira Code',monospace;white-space:pre-wrap;word-break:break-all;margin:0;color:var(--text)">${annotated}</pre>
+    </div>`;
+  }
+
+  const algTag = header.alg ? `<span class="tag">${header.alg}</span>` : '';
+  partsEl.innerHTML =
+    renderPart('Header', '#4f7ef7', header, algTag) +
+    renderPart('Payload', '#22c55e', payload) +
+    `<div style="background:#12151e;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Signature（原始 Base64）</div>
+      <div style="font-family:monospace;font-size:12px;word-break:break-all;color:#64748b">${parts[2]}</div>
+    </div>`;
+}
+
+function fmtDuration(ms) {
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return s + ' 秒';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + ' 分钟';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + ' 小时';
+  return Math.floor(h / 24) + ' 天';
+}
 
 // ── UUID ──
 function genUUIDs() {
