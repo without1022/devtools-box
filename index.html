@@ -134,10 +134,42 @@
     .regex-match { background: rgba(79,126,247,.25); border-radius: 2px; }
     .regex-result { font-size: 12px; font-family: "SF Mono","Fira Code",monospace; line-height: 1.8; }
 
-    /* ── Diff ── */
-    .diff-added { background: rgba(34,197,94,.15); color: #4ade80; }
-    .diff-removed { background: rgba(239,68,68,.15); color: #f87171; }
-    .diff-line { display: block; padding: 1px 4px; font-size: 12px; font-family: "SF Mono","Fira Code",monospace; white-space: pre-wrap; word-break: break-all; }
+    /* ── Markdown ── */
+    #md-preview h1,#md-preview h2,#md-preview h3,#md-preview h4 { color:var(--text);margin:16px 0 8px;font-weight:700 }
+    #md-preview h1{font-size:22px;border-bottom:1px solid var(--border);padding-bottom:8px}
+    #md-preview h2{font-size:18px}
+    #md-preview h3{font-size:15px}
+    #md-preview p{margin:8px 0}
+    #md-preview a{color:var(--accent)}
+    #md-preview code{background:#1e2438;border-radius:4px;padding:1px 5px;font-family:"SF Mono","Fira Code",monospace;font-size:12px;color:#e2e8f0}
+    #md-preview pre{background:#1e2438;border-radius:8px;padding:12px;overflow-x:auto;margin:10px 0}
+    #md-preview pre code{background:none;padding:0}
+    #md-preview blockquote{border-left:3px solid var(--accent);margin:10px 0;padding:6px 12px;color:var(--muted);background:#1a1f2e;border-radius:0 6px 6px 0}
+    #md-preview ul,#md-preview ol{margin:8px 0;padding-left:24px}
+    #md-preview li{margin:3px 0}
+    #md-preview table{border-collapse:collapse;width:100%;margin:10px 0}
+    #md-preview th,#md-preview td{border:1px solid var(--border);padding:6px 10px;font-size:13px}
+    #md-preview th{background:#1e2438;font-weight:600}
+    #md-preview hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+    #md-preview img{max-width:100%;border-radius:6px}
+
+    /* ── UI 美化 ── */
+    body { background: var(--bg); }
+    .sidebar {
+      background: linear-gradient(180deg, #0d1020 0%, #12151e 100%);
+      border-right: 1px solid rgba(79,126,247,.15);
+      box-shadow: 2px 0 20px rgba(0,0,0,.3);
+    }
+    .sidebar-logo h2 { background: linear-gradient(135deg,#4f7ef7,#a855f7); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-size:15px; }
+    .nav-item.active { background: linear-gradient(90deg,rgba(79,126,247,.15),transparent); border-left-color: var(--accent); }
+    .nav-item:hover { background: rgba(79,126,247,.08); }
+    .nav-group-title { color: #3a4a6b; letter-spacing: 1.5px; }
+    .content { background: radial-gradient(ellipse at 80% 10%, rgba(79,126,247,.04) 0%, transparent 60%), var(--bg); }
+    .tool-pane .pane-title { background: linear-gradient(135deg,#e2e8f0,#94a3b8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .btn-primary { background: linear-gradient(135deg,#4f7ef7,#6366f1); box-shadow: 0 2px 8px rgba(79,126,247,.3); }
+    .btn-primary:hover { opacity:1; filter:brightness(1.1); }
+    .output-box { border-color: rgba(79,126,247,.2); }
+    textarea:focus, input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,126,247,.15); }
   </style>
 </head>
 <body>
@@ -147,6 +179,9 @@
 <nav class="sidebar">
   <div class="sidebar-logo">
     <h2>🔧 开发工具箱</h2>
+  </div>
+  <div style="padding:8px 12px">
+    <input type="text" id="nav-search" placeholder="搜索工具..." oninput="navSearch()" style="font-size:12px;padding:6px 10px;border-radius:6px;width:100%">
   </div>
 
   <div class="nav-group-title">编码转换</div>
@@ -160,7 +195,10 @@
 
   <div class="nav-group-title">格式化</div>
   <div class="nav-item" onclick="show('json')"><span class="icon">📋</span> JSON</div>
+  <div class="nav-item" onclick="show('xml')"><span class="icon">📰</span> XML</div>
+  <div class="nav-item" onclick="show('yaml')"><span class="icon">📝</span> YAML ↔ JSON</div>
   <div class="nav-item" onclick="show('timestamp')"><span class="icon">🕐</span> 时间戳</div>
+  <div class="nav-item" onclick="show('time-calc')"><span class="icon">📅</span> 时间计算</div>
   <div class="nav-item" onclick="show('cron')"><span class="icon">⏰</span> Cron 表达式</div>
   <div class="nav-item" onclick="show('url-parser')"><span class="icon">🔗</span> URL 解析</div>
 
@@ -172,6 +210,7 @@
   <div class="nav-group-title">生成器</div>
   <div class="nav-item" onclick="show('uuid')"><span class="icon">🆔</span> UUID</div>
   <div class="nav-item" onclick="show('password')"><span class="icon">🔑</span> 密码生成</div>
+  <div class="nav-item" onclick="show('random')"><span class="icon">🎲</span> 随机数</div>
   <div class="nav-item" onclick="show('qrcode')"><span class="icon">📱</span> 二维码</div>
   <div class="nav-item" onclick="show('img-base64')"><span class="icon">🖼</span> 图片转 Base64</div>
 
@@ -179,11 +218,27 @@
   <div class="nav-item" onclick="show('regex')"><span class="icon">🔍</span> 正则测试</div>
   <div class="nav-item" onclick="show('diff')"><span class="icon">↔️</span> 文本对比</div>
   <div class="nav-item" onclick="show('text')"><span class="icon">✏️</span> 文本工具</div>
+  <div class="nav-item" onclick="show('char-stat')"><span class="icon">📊</span> 字符统计</div>
+  <div class="nav-item" onclick="show('zhconv')"><span class="icon">繁</span> 繁简转换</div>
+  <div class="nav-item" onclick="show('num-upper')"><span class="icon">💴</span> 数字大写</div>
+  <div class="nav-item" onclick="show('minify')"><span class="icon">🗜</span> 代码压缩</div>
+
+  <div class="nav-group-title">图表 / 文档</div>
+  <div class="nav-item" onclick="show('markdown')"><span class="icon">📄</span> Markdown</div>
+  <div class="nav-item" onclick="show('mermaid')"><span class="icon">🔀</span> Mermaid 图表</div>
+  <div class="nav-item" onclick="show('plantuml')"><span class="icon">🌿</span> PlantUML</div>
+
+  <div class="nav-group-title">图像</div>
+  <div class="nav-item" onclick="show('img-compress')"><span class="icon">🗜</span> 图片压缩</div>
+  <div class="nav-item" onclick="show('img-convert')"><span class="icon">🔁</span> 图片格式转换</div>
 
   <div class="nav-group-title">小工具</div>
+  <div class="nav-item" onclick="show('color')"><span class="icon">🎨</span> 颜色转换</div>
+  <div class="nav-item" onclick="show('palette')"><span class="icon">🖌</span> 调色板</div>
+  <div class="nav-item" onclick="show('gradient')"><span class="icon">🌈</span> 渐变生成</div>
+  <div class="nav-item" onclick="show('ascii-table')"><span class="icon">📟</span> ASCII 表</div>
   <div class="nav-item" onclick="show('clock')"><span class="icon">🕰</span> 时钟</div>
   <div class="nav-item" onclick="show('stopwatch')"><span class="icon">⏱</span> 秒表</div>
-  <div class="nav-item" onclick="show('color')"><span class="icon">🎨</span> 颜色转换</div>
 </nav>
 
 <!-- Content -->
@@ -639,6 +694,307 @@
     </div>
   </div>
 
+  <!-- XML -->
+  <div id="pane-xml" class="tool-pane">
+    <div class="pane-title">XML 格式化</div>
+    <div class="pane-desc">XML 格式化 / 压缩 / 校验</div>
+    <div class="row" style="margin-bottom:8px;align-items:center">
+      <button class="btn btn-primary" onclick="xmlFmt()">格式化</button>
+      <button class="btn btn-ghost" onclick="xmlMin()">压缩</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('xml-input').value='';setOut('xml-output','');document.getElementById('xml-status').innerHTML=''">清空</button>
+      <span id="xml-status"></span>
+    </div>
+    <div class="row">
+      <div class="col"><label>输入 XML</label><textarea id="xml-input" style="min-height:300px" placeholder="<root><item>value</item></root>" oninput="xmlValidate()"></textarea></div>
+      <div class="col"><label>输出</label><div class="output-box" id="xml-output" style="min-height:300px"><button class="copy-btn" onclick="copyEl('xml-output')">复制</button></div></div>
+    </div>
+  </div>
+
+  <!-- YAML -->
+  <div id="pane-yaml" class="tool-pane">
+    <div class="pane-title">YAML ↔ JSON</div>
+    <div class="pane-desc">YAML 与 JSON 双向转换，支持格式化校验</div>
+    <div class="row" style="margin-bottom:8px">
+      <button class="btn btn-primary" onclick="yamlToJson()">YAML → JSON</button>
+      <button class="btn btn-ghost" onclick="jsonToYaml()">JSON → YAML</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('yaml-input').value='';setOut('yaml-output','');document.getElementById('yaml-status').innerHTML=''">清空</button>
+      <span id="yaml-status"></span>
+    </div>
+    <div class="row">
+      <div class="col"><label>输入</label><textarea id="yaml-input" style="min-height:300px" placeholder="name: example&#10;version: 1.0"></textarea></div>
+      <div class="col"><label>输出</label><div class="output-box" id="yaml-output" style="min-height:300px"><button class="copy-btn" onclick="copyEl('yaml-output')">复制</button></div></div>
+    </div>
+  </div>
+
+  <!-- Time Calc -->
+  <div id="pane-time-calc" class="tool-pane">
+    <div class="pane-title">时间计算</div>
+    <div class="pane-desc">两个日期之差 / 日期加减</div>
+    <hr class="divider" style="margin-top:0">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">日期差值</div>
+    <div class="row">
+      <div class="col"><label>开始日期</label><input type="date" id="tc-start" oninput="tcDiff()"></div>
+      <div class="col"><label>结束日期</label><input type="date" id="tc-end" oninput="tcDiff()"></div>
+    </div>
+    <div id="tc-diff-result" style="margin-bottom:24px"></div>
+    <hr class="divider">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">日期加减</div>
+    <div class="row" style="align-items:flex-end">
+      <div class="col"><label>基准日期</label><input type="date" id="tc-base" oninput="tcAdd()"></div>
+      <div style="width:90px"><label>数值</label><input type="number" id="tc-num" value="7" oninput="tcAdd()"></div>
+      <div style="width:100px"><label>单位</label>
+        <select id="tc-unit" onchange="tcAdd()">
+          <option value="d">天</option>
+          <option value="m">月</option>
+          <option value="y">年</option>
+          <option value="w">周</option>
+        </select>
+      </div>
+    </div>
+    <div id="tc-add-result"></div>
+  </div>
+
+  <!-- Minify -->
+  <div id="pane-minify" class="tool-pane">
+    <div class="pane-title">代码压缩</div>
+    <div class="pane-desc">HTML / CSS / JS 去注释和多余空白，纯前端实现</div>
+    <div class="row" style="margin-bottom:8px;align-items:center">
+      <select id="minify-type" style="width:auto;flex:none">
+        <option value="html">HTML</option>
+        <option value="css">CSS</option>
+        <option value="js">JavaScript</option>
+      </select>
+      <button class="btn btn-primary" onclick="doMinify()">压缩</button>
+      <button class="btn btn-ghost" onclick="doBeautify()">格式化</button>
+      <span id="minify-stat" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+    <div class="row">
+      <div class="col"><label>输入</label><textarea id="minify-input" style="min-height:300px"></textarea></div>
+      <div class="col"><label>输出</label><div class="output-box" id="minify-output" style="min-height:300px"><button class="copy-btn" onclick="copyEl('minify-output')">复制</button></div></div>
+    </div>
+  </div>
+
+  <!-- Char Stat -->
+  <div id="pane-char-stat" class="tool-pane">
+    <div class="pane-title">字符统计</div>
+    <div class="pane-desc">详细统计字符、汉字、英文、数字、行数、字节、高频词</div>
+    <textarea id="cs-input" placeholder="粘贴文本..." style="min-height:200px" oninput="charStat()"></textarea>
+    <div id="cs-result" style="margin-top:16px"></div>
+  </div>
+
+  <!-- ZhConv -->
+  <div id="pane-zhconv" class="tool-pane">
+    <div class="pane-title">繁简转换</div>
+    <div class="pane-desc">中文简体 ↔ 繁体转换（内置字典，不联网）</div>
+    <div class="row" style="margin-bottom:8px">
+      <button class="btn btn-primary" onclick="toTraditional()">简 → 繁</button>
+      <button class="btn btn-ghost" onclick="toSimplified()">繁 → 简</button>
+    </div>
+    <div class="row">
+      <div class="col"><label>输入</label><textarea id="zh-input" placeholder="请输入中文..." style="min-height:200px"></textarea></div>
+      <div class="col"><label>输出</label><div class="output-box" id="zh-output" style="min-height:200px"><button class="copy-btn" onclick="copyEl('zh-output')">复制</button></div></div>
+    </div>
+  </div>
+
+  <!-- Num Upper -->
+  <div id="pane-num-upper" class="tool-pane">
+    <div class="pane-title">数字转大写</div>
+    <div class="pane-desc">人民币金额阿拉伯数字转中文大写</div>
+    <label>金额（数字）</label>
+    <input type="text" id="nu-input" placeholder="例：12345.67" oninput="numUpper()">
+    <div id="nu-result" style="margin-top:16px;display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+
+  <!-- Random -->
+  <div id="pane-random" class="tool-pane">
+    <div class="pane-title">随机数生成</div>
+    <div class="pane-desc">指定范围批量生成随机整数或小数</div>
+    <div class="row" style="align-items:flex-end;flex-wrap:wrap;gap:12px">
+      <div><label>最小值</label><input type="number" id="rnd-min" value="1" style="width:100px"></div>
+      <div><label>最大值</label><input type="number" id="rnd-max" value="100" style="width:100px"></div>
+      <div><label>数量</label><input type="number" id="rnd-count" value="10" min="1" max="1000" style="width:80px"></div>
+      <div><label>小数位</label><input type="number" id="rnd-decimal" value="0" min="0" max="10" style="width:70px"></div>
+      <label style="display:flex;align-items:center;gap:5px;margin:0;cursor:pointer;align-self:flex-end;padding-bottom:2px"><input type="checkbox" id="rnd-unique"> 不重复</label>
+    </div>
+    <button class="btn btn-primary" style="margin-top:12px" onclick="genRandom()">生成</button>
+    <div class="output-box" id="rnd-output" style="margin-top:12px;min-height:120px"><button class="copy-btn" onclick="copyEl('rnd-output')">复制</button></div>
+  </div>
+
+  <!-- Markdown -->
+  <div id="pane-markdown" class="tool-pane" style="max-width:100%">
+    <div class="pane-title">Markdown 预览</div>
+    <div class="pane-desc">实时渲染，支持 GFM 语法</div>
+    <div style="display:flex;gap:16px;height:calc(100vh - 160px)">
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+        <label>输入</label>
+        <textarea id="md-input" style="flex:1;resize:none;min-height:0" placeholder="# 标题&#10;&#10;**加粗** *斜体* `code`" oninput="mdRender()"></textarea>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+        <label>预览</label>
+        <div id="md-preview" style="flex:1;background:#12151e;border:1px solid var(--border);border-radius:8px;padding:16px;overflow-y:auto;line-height:1.7;font-size:14px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mermaid -->
+  <div id="pane-mermaid" class="tool-pane" style="max-width:100%">
+    <div class="pane-title">Mermaid 图表</div>
+    <div class="pane-desc">流程图、时序图、类图、ER图等，实时渲染</div>
+    <div style="display:flex;gap:16px;height:calc(100vh - 200px)">
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+        <div class="row" style="margin-bottom:8px;flex-wrap:nowrap">
+          <label style="margin:0;align-self:center">示例：</label>
+          <select id="mmd-example" onchange="mmdSetExample()" style="flex:1;width:auto">
+            <option value="flowchart">流程图</option>
+            <option value="sequence">时序图</option>
+            <option value="class">类图</option>
+            <option value="er">ER图</option>
+            <option value="gantt">甘特图</option>
+            <option value="pie">饼图</option>
+          </select>
+        </div>
+        <textarea id="mmd-input" style="flex:1;resize:none;min-height:0" oninput="mmdRender()"></textarea>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <label style="margin:0">预览</label>
+          <button class="btn btn-ghost btn-sm" onclick="mmdExport()">导出 SVG</button>
+        </div>
+        <div id="mmd-preview" style="flex:1;background:#fff;border-radius:8px;padding:16px;overflow:auto;display:flex;align-items:center;justify-content:center"></div>
+        <div id="mmd-error" style="color:var(--red);font-size:12px;margin-top:6px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PlantUML -->
+  <div id="pane-plantuml" class="tool-pane" style="max-width:100%">
+    <div class="pane-title">PlantUML 渲染</div>
+    <div class="pane-desc">通过 PlantUML 官方服务渲染，需要网络</div>
+    <div style="display:flex;gap:16px;height:calc(100vh - 200px)">
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+        <div class="row" style="margin-bottom:8px;flex-wrap:nowrap">
+          <label style="margin:0;align-self:center">示例：</label>
+          <select id="puml-example" onchange="pumlSetExample()" style="flex:1;width:auto">
+            <option value="sequence">时序图</option>
+            <option value="class">类图</option>
+            <option value="activity">活动图</option>
+            <option value="component">组件图</option>
+          </select>
+        </div>
+        <textarea id="puml-input" style="flex:1;resize:none;min-height:0" oninput="pumlDebounce()"></textarea>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <label style="margin:0">预览</label>
+          <a id="puml-dl" class="btn btn-ghost btn-sm" style="text-decoration:none" target="_blank">在新标签打开</a>
+        </div>
+        <div style="flex:1;background:#fff;border-radius:8px;overflow:auto;display:flex;align-items:center;justify-content:center;padding:12px">
+          <img id="puml-img" style="max-width:100%;max-height:100%;display:none">
+          <div id="puml-hint" style="color:#888;font-size:13px">输入 PlantUML 代码后自动渲染</div>
+        </div>
+        <div id="puml-error" style="color:var(--red);font-size:12px;margin-top:6px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Compress -->
+  <div id="pane-img-compress" class="tool-pane">
+    <div class="pane-title">图片压缩</div>
+    <div class="pane-desc">纯前端 Canvas 压缩，支持 JPG/PNG，文件不上传</div>
+    <div id="ic-drop" style="border:2px dashed var(--border);border-radius:12px;padding:48px;text-align:center;cursor:pointer;transition:border-color .15s;color:var(--muted)"
+      ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+      ondragleave="this.style.borderColor='var(--border)'"
+      ondrop="icDrop(event)"
+      onclick="document.getElementById('ic-file').click()">
+      <div style="font-size:32px;margin-bottom:8px">🗜</div>
+      <div>拖拽图片到此处，或点击选择</div>
+    </div>
+    <input type="file" id="ic-file" accept="image/*" style="display:none" onchange="icFromInput()">
+    <div id="ic-controls" style="display:none;margin-top:16px">
+      <div class="row" style="align-items:center">
+        <label style="margin:0;white-space:nowrap">质量</label>
+        <input type="range" id="ic-quality" min="1" max="100" value="80" style="flex:1;background:none;border:none;padding:0" oninput="icPreview()">
+        <span id="ic-quality-val" style="width:36px;text-align:right;font-family:monospace;font-size:13px">80%</span>
+      </div>
+      <div id="ic-info" style="display:flex;gap:24px;margin:12px 0;font-size:12px;color:var(--muted)"></div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div><label>原图</label><img id="ic-before" style="max-width:300px;max-height:240px;border-radius:8px;border:1px solid var(--border);display:block"></div>
+        <div><label>压缩后</label><img id="ic-after" style="max-width:300px;max-height:240px;border-radius:8px;border:1px solid var(--border);display:block"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="icDownload()">下载压缩图</button>
+    </div>
+  </div>
+
+  <!-- Image Convert -->
+  <div id="pane-img-convert" class="tool-pane">
+    <div class="pane-title">图片格式转换</div>
+    <div class="pane-desc">PNG / JPG / WebP 互转，纯前端 Canvas，文件不上传</div>
+    <div id="iv-drop" style="border:2px dashed var(--border);border-radius:12px;padding:48px;text-align:center;cursor:pointer;transition:border-color .15s;color:var(--muted)"
+      ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+      ondragleave="this.style.borderColor='var(--border)'"
+      ondrop="ivDrop(event)"
+      onclick="document.getElementById('iv-file').click()">
+      <div style="font-size:32px;margin-bottom:8px">🔁</div>
+      <div>拖拽图片到此处，或点击选择</div>
+    </div>
+    <input type="file" id="iv-file" accept="image/*" style="display:none" onchange="ivFromInput()">
+    <div id="iv-controls" style="display:none;margin-top:16px">
+      <div class="row" style="align-items:center">
+        <label style="margin:0">输出格式</label>
+        <select id="iv-format" style="width:auto;flex:none">
+          <option value="image/png">PNG</option>
+          <option value="image/jpeg">JPG</option>
+          <option value="image/webp">WebP</option>
+        </select>
+        <button class="btn btn-primary" onclick="ivConvert()">转换并下载</button>
+      </div>
+      <img id="iv-preview" style="margin-top:12px;max-width:100%;max-height:300px;border-radius:8px;border:1px solid var(--border)">
+    </div>
+  </div>
+
+  <!-- Palette -->
+  <div id="pane-palette" class="tool-pane">
+    <div class="pane-title">颜色调色板</div>
+    <div class="pane-desc">输入主色，生成配色方案（互补色、类似色、三角形等）</div>
+    <div class="row" style="align-items:flex-end">
+      <div class="col"><label>主色 HEX</label><input type="text" id="pal-hex" value="#4f7ef7" oninput="palGen()"></div>
+      <div><input type="color" id="pal-picker" value="#4f7ef7" style="width:42px;height:38px;border-radius:6px;cursor:pointer;padding:2px;background:var(--card);border:1px solid var(--border)" oninput="document.getElementById('pal-hex').value=this.value;palGen()"></div>
+    </div>
+    <div id="pal-preview" style="width:100%;height:60px;border-radius:8px;margin:12px 0;transition:background .2s"></div>
+    <div id="pal-result" style="display:flex;flex-direction:column;gap:16px;margin-top:8px"></div>
+  </div>
+
+  <!-- Gradient -->
+  <div id="pane-gradient" class="tool-pane">
+    <div class="pane-title">渐变生成器</div>
+    <div class="pane-desc">可视化生成 CSS linear-gradient</div>
+    <div id="grad-preview" style="width:100%;height:100px;border-radius:10px;margin-bottom:16px;transition:background .2s"></div>
+    <div class="row" style="align-items:flex-end">
+      <div class="col"><label>颜色 1</label><input type="color" id="grad-c1" value="#4f7ef7" oninput="gradGen()" style="width:100%;height:38px;border-radius:6px;cursor:pointer;padding:2px;background:var(--card);border:1px solid var(--border)"></div>
+      <div class="col"><label>颜色 2</label><input type="color" id="grad-c2" value="#a855f7" oninput="gradGen()" style="width:100%;height:38px;border-radius:6px;cursor:pointer;padding:2px;background:var(--card);border:1px solid var(--border)"></div>
+      <div><label>角度</label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="range" id="grad-angle" min="0" max="360" value="135" oninput="gradGen();document.getElementById('grad-angle-val').textContent=this.value+'°'" style="width:120px;background:none;border:none;padding:0">
+          <span id="grad-angle-val" style="font-family:monospace;font-size:13px;width:36px">135°</span>
+        </div>
+      </div>
+    </div>
+    <label style="margin-top:12px">CSS 代码</label>
+    <div class="output-box" id="grad-output"><button class="copy-btn" onclick="copyEl('grad-output')">复制</button></div>
+    <div style="margin-top:16px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">预设渐变</div>
+      <div id="grad-presets" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+  </div>
+
+  <!-- ASCII Table -->
+  <div id="pane-ascii-table" class="tool-pane">
+    <div class="pane-title">ASCII 字符表</div>
+    <div class="pane-desc">完整 ASCII 表，支持搜索（字符/十进制/十六进制）</div>
+    <input type="text" id="ascii-search" placeholder="搜索字符、十进制或十六进制..." oninput="asciiFilter()" style="margin-bottom:12px">
+    <div id="ascii-table" style="overflow-x:auto"></div>
+  </div>
+
 </main>
 </div>
 
@@ -652,7 +1008,12 @@ function show(id) {
   // 触发各工具初始化
   if (id === 'uuid') genUUIDs();
   if (id === 'cron') cronParse();
-  if (id === 'radix') { ['r-bin','r-oct','r-dec','r-hex','r-custom-val','r-custom-result'].forEach(i => { const el=document.getElementById(i); if(el) el.value=el.innerHTML=''; }); document.getElementById('r-custom-result').innerHTML=''; }
+  if (id === 'radix') { ['r-bin','r-oct','r-dec','r-hex'].forEach(i => document.getElementById(i).value=''); document.getElementById('r-custom-result').innerHTML=''; }
+  if (id === 'mermaid') { if (!document.getElementById('mmd-input').value) mmdSetExample(); else mmdRender(); }
+  if (id === 'plantuml') { if (!document.getElementById('puml-input').value) pumlSetExample(); }
+  if (id === 'gradient') gradInit();
+  if (id === 'palette') palGen();
+  if (id === 'ascii-table') asciiInit();
   if (id === 'qrcode') genQR();
 }
 
@@ -1495,10 +1856,674 @@ function ibCopyBase64() {
   navigator.clipboard.writeText(uri.split(',')[1] || uri);
 }
 
+// ── Nav Search ──
+function navSearch() {
+  const q = document.getElementById('nav-search').value.toLowerCase();
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  document.querySelectorAll('.nav-group-title').forEach(title => {
+    let next = title.nextElementSibling, anyVisible = false;
+    while (next && !next.classList.contains('nav-group-title')) {
+      if (next.style.display !== 'none') anyVisible = true;
+      next = next.nextElementSibling;
+    }
+    title.style.display = anyVisible ? '' : 'none';
+  });
+}
+
+// ── XML ──
+function xmlFmt() {
+  const txt = document.getElementById('xml-input').value.trim();
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(txt, 'application/xml');
+    const err = doc.querySelector('parsererror');
+    if (err) throw new Error(err.textContent.split('\n')[0]);
+    setOut('xml-output', xmlBeautify(doc.documentElement, 0));
+    document.getElementById('xml-status').innerHTML = '<span class="badge badge-ok">✓ 有效</span>';
+  } catch(e) { document.getElementById('xml-status').innerHTML = `<span class="badge badge-err">✗ ${e.message.slice(0,80)}</span>`; }
+}
+function xmlMin() {
+  const txt = document.getElementById('xml-input').value;
+  setOut('xml-output', txt.replace(/>\s+</g,'><').replace(/\s+/g,' ').trim());
+}
+function xmlValidate() {
+  const txt = document.getElementById('xml-input').value.trim();
+  if (!txt) { document.getElementById('xml-status').innerHTML=''; return; }
+  try {
+    const doc = new DOMParser().parseFromString(txt,'application/xml');
+    const err = doc.querySelector('parsererror');
+    document.getElementById('xml-status').innerHTML = err
+      ? '<span class="badge badge-err">✗ 无效</span>'
+      : '<span class="badge badge-ok">✓ 有效</span>';
+  } catch(e) {}
+}
+function xmlBeautify(node, depth) {
+  const indent = '  '.repeat(depth);
+  if (node.nodeType === 3) return node.textContent.trim() ? indent + node.textContent.trim() : '';
+  if (node.nodeType !== 1) return '';
+  const attrs = Array.from(node.attributes).map(a => ` ${a.name}="${a.value}"`).join('');
+  const children = Array.from(node.childNodes).map(c => xmlBeautify(c, depth+1)).filter(Boolean);
+  if (!children.length) return `${indent}<${node.tagName}${attrs}/>`;
+  if (children.length === 1 && !children[0].includes('\n'))
+    return `${indent}<${node.tagName}${attrs}>${children[0].trim()}</${node.tagName}>`;
+  return `${indent}<${node.tagName}${attrs}>\n${children.join('\n')}\n${indent}</${node.tagName}>`;
+}
+
+// ── YAML ↔ JSON ──
+// 内置轻量 YAML parser（支持常见场景）
+function yamlToJson() {
+  const txt = document.getElementById('yaml-input').value;
+  try {
+    const obj = parseYaml(txt);
+    setOut('yaml-output', JSON.stringify(obj, null, 2));
+    document.getElementById('yaml-status').innerHTML = '<span class="badge badge-ok">✓ 成功</span>';
+  } catch(e) { document.getElementById('yaml-status').innerHTML = `<span class="badge badge-err">✗ ${e.message}</span>`; }
+}
+function jsonToYaml() {
+  const txt = document.getElementById('yaml-input').value;
+  try {
+    const obj = JSON.parse(txt);
+    setOut('yaml-output', toYaml(obj, 0));
+    document.getElementById('yaml-status').innerHTML = '<span class="badge badge-ok">✓ 成功</span>';
+  } catch(e) { document.getElementById('yaml-status').innerHTML = `<span class="badge badge-err">✗ ${e.message}</span>`; }
+}
+function toYaml(obj, depth) {
+  const ind = '  '.repeat(depth);
+  if (obj === null) return 'null';
+  if (typeof obj === 'boolean' || typeof obj === 'number') return String(obj);
+  if (typeof obj === 'string') return obj.includes('\n') || obj.includes('"') || obj.includes("'") ? `"${obj.replace(/"/g,'\\"')}"` : obj;
+  if (Array.isArray(obj)) return obj.map(v => `${ind}- ${toYaml(v, depth+1)}`).join('\n');
+  return Object.entries(obj).map(([k,v]) => {
+    const val = toYaml(v, depth+1);
+    if (typeof v === 'object' && v !== null) return `${ind}${k}:\n${val}`;
+    return `${ind}${k}: ${val}`;
+  }).join('\n');
+}
+function parseYaml(text) {
+  // 动态加载 js-yaml
+  return new Promise((resolve, reject) => {
+    if (window.jsyaml) { try { resolve(jsyaml.load(text)); } catch(e) { reject(e); } return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js';
+    s.onload = () => { try { resolve(jsyaml.load(text)); } catch(e) { reject(e); } };
+    s.onerror = () => reject(new Error('无法加载 js-yaml 库'));
+    document.head.appendChild(s);
+  });
+}
+// 重写 yamlToJson 用异步
+async function yamlToJson() {
+  const txt = document.getElementById('yaml-input').value;
+  try {
+    const obj = await parseYaml(txt);
+    setOut('yaml-output', JSON.stringify(obj, null, 2));
+    document.getElementById('yaml-status').innerHTML = '<span class="badge badge-ok">✓ 成功</span>';
+  } catch(e) { document.getElementById('yaml-status').innerHTML = `<span class="badge badge-err">✗ ${e.message}</span>`; }
+}
+
+// ── Time Calc ──
+function tcDiff() {
+  const a = document.getElementById('tc-start').value;
+  const b = document.getElementById('tc-end').value;
+  const el = document.getElementById('tc-diff-result');
+  if (!a || !b) { el.innerHTML=''; return; }
+  const da = new Date(a), db = new Date(b);
+  const diffMs = db - da, sign = diffMs < 0 ? -1 : 1;
+  const abs = Math.abs(diffMs);
+  const days = Math.floor(abs / 86400000);
+  const weeks = Math.floor(days / 7);
+  const months = Math.round(days / 30.44);
+  const years = Math.floor(days / 365.25);
+  const label = sign < 0 ? '之前' : '之后';
+  el.innerHTML = [
+    ['天数', `${sign*days} 天 (${label})`],
+    ['周数', `${sign*weeks} 周 ${sign*(days%7)} 天`],
+    ['约月', `约 ${sign*months} 个月`],
+    ['约年', `约 ${sign*years} 年 ${sign*Math.floor((days - years*365))} 天`],
+  ].map(([k,v])=>`<div style="display:flex;background:#12151e;border:1px solid var(--border);border-radius:6px;overflow:hidden">
+    <div style="width:60px;flex-shrink:0;padding:7px 12px;font-size:11px;color:var(--muted);border-right:1px solid var(--border)">${k}</div>
+    <div style="padding:7px 12px;font-family:monospace;font-size:13px">${v}</div>
+  </div>`).join('');
+}
+function tcAdd() {
+  const base = document.getElementById('tc-base').value;
+  const num = parseInt(document.getElementById('tc-num').value) || 0;
+  const unit = document.getElementById('tc-unit').value;
+  const el = document.getElementById('tc-add-result');
+  if (!base) { el.innerHTML=''; return; }
+  const d = new Date(base);
+  if (unit==='d') d.setDate(d.getDate()+num);
+  else if (unit==='w') d.setDate(d.getDate()+num*7);
+  else if (unit==='m') d.setMonth(d.getMonth()+num);
+  else if (unit==='y') d.setFullYear(d.getFullYear()+num);
+  const fmt = d.toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  el.innerHTML = `<div style="margin-top:12px;background:#12151e;border:1px solid var(--border);border-radius:8px;padding:14px;font-size:15px;font-family:monospace">${fmt} &nbsp;<span style="font-size:12px;color:var(--muted)">(${d.toISOString().slice(0,10)})</span></div>`;
+}
+
+// ── Minify ──
+function doMinify() {
+  const type = document.getElementById('minify-type').value;
+  const input = document.getElementById('minify-input').value;
+  let out = input;
+  if (type === 'html') {
+    out = input.replace(/<!--[\s\S]*?-->/g,'').replace(/\s+/g,' ').replace(/>\s+</g,'><').trim();
+  } else if (type === 'css') {
+    out = input.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\s+/g,' ')
+      .replace(/\s*([{}:;,>+~])\s*/g,'$1').replace(/;}/g,'}').trim();
+  } else if (type === 'js') {
+    out = input.replace(/\/\/[^\n]*/g,'').replace(/\/\*[\s\S]*?\*\//g,'')
+      .replace(/\n\s*/g,' ').replace(/\s{2,}/g,' ').trim();
+  }
+  const ratio = input.length ? ((1 - out.length/input.length)*100).toFixed(1) : 0;
+  setOut('minify-output', out);
+  document.getElementById('minify-stat').textContent = `${input.length} → ${out.length} 字符，压缩 ${ratio}%`;
+}
+function doBeautify() {
+  const type = document.getElementById('minify-type').value;
+  const input = document.getElementById('minify-input').value;
+  if (type === 'html' || type === 'js') { setOut('minify-output', input); return; }
+  if (type === 'css') {
+    const out = input.replace(/\{/g,' {\n  ').replace(/;(?!\s*})/g,';\n  ').replace(/}/g,'\n}\n').replace(/,\s*/g,',\n').trim();
+    setOut('minify-output', out);
+  }
+}
+
+// ── Char Stat ──
+function charStat() {
+  const v = document.getElementById('cs-input').value;
+  const el = document.getElementById('cs-result');
+  if (!v) { el.innerHTML=''; return; }
+  const total = v.length;
+  const chinese = (v.match(/[\u4e00-\u9fff]/g)||[]).length;
+  const english = (v.match(/[a-zA-Z]/g)||[]).length;
+  const digits = (v.match(/\d/g)||[]).length;
+  const spaces = (v.match(/\s/g)||[]).length;
+  const lines = v.split('\n').length;
+  const bytes = new TextEncoder().encode(v).length;
+  const words = v.trim() ? v.trim().split(/\s+/).length : 0;
+  const punct = total - chinese - english - digits - spaces;
+  // 词频 top10
+  const freq = {};
+  (v.match(/[\u4e00-\u9fff]{1}|[a-zA-Z]+/g)||[]).forEach(w => { freq[w]=(freq[w]||0)+1; });
+  const top = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const stats = [['总字符',total],['汉字',chinese],['英文字母',english],['数字',digits],['空白',spaces],['标点/其他',punct],['行数',lines],['单词数',words],['字节数',bytes]];
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:16px">
+    ${stats.map(([k,v])=>`<div style="background:#12151e;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:2px">${k}</div>
+      <div style="font-size:20px;font-weight:700;font-family:monospace">${v}</div>
+    </div>`).join('')}
+  </div>
+  ${top.length ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">高频词（Top 10）</div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px">
+    ${top.map(([w,c])=>`<span style="background:#12151e;border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:12px;font-family:monospace">${w} <span style="color:var(--muted)">${c}</span></span>`).join('')}
+  </div>` : ''}`;
+}
+
+// ── 繁简转换（内置核心字典） ──
+const ZH_S2T = {"爱":"愛","碍":"礙","安":"安","岸":"岸","肮":"骯","袄":"襖","奥":"奧","坝":"壩","罢":"罷","摆":"擺","败":"敗","办":"辦","帮":"幫","宝":"寶","报":"報","贝":"貝","备":"備","笔":"筆","币":"幣","闭":"閉","边":"邊","变":"變","标":"標","别":"別","补":"補","才":"才","苍":"蒼","层":"層","长":"長","厂":"廠","场":"場","尝":"嘗","车":"車","衬":"襯","称":"稱","虫":"蟲","处":"處","触":"觸","传":"傳","创":"創","窗":"窗","词":"詞","从":"從","达":"達","带":"帶","担":"擔","导":"導","灯":"燈","邓":"鄧","敌":"敵","递":"遞","点":"點","电":"電","动":"動","断":"斷","对":"對","队":"隊","夺":"奪","阀":"閥","发":"發","几":"幾","际":"際","继":"繼","价":"價","间":"間","见":"見","将":"將","奖":"獎","讲":"講","进":"進","惊":"驚","经":"經","举":"舉","开":"開","来":"來","类":"類","离":"離","历":"歷","联":"聯","楼":"樓","乱":"亂","轮":"輪","罗":"羅","马":"馬","买":"買","门":"門","弥":"彌","面":"面","灭":"滅","难":"難","脑":"腦","鸟":"鳥","农":"農","气":"氣","钱":"錢","强":"強","桥":"橋","亲":"親","情":"情","请":"請","热":"熱","认":"認","时":"時","实":"實","双":"雙","说":"說","岁":"歲","台":"台","体":"體","题":"題","铁":"鐵","听":"聽","头":"頭","图":"圖","万":"萬","为":"為","问":"問","无":"無","显":"顯","现":"現","线":"線","乡":"鄉","写":"寫","选":"選","学":"學","艺":"藝","义":"義","应":"應","鱼":"魚","语":"語","员":"員","远":"遠","运":"運","战":"戰","这":"這","证":"證","只":"只","种":"種","众":"衆","专":"專","转":"轉","总":"總","组":"組"};
+const ZH_T2S = Object.fromEntries(Object.entries(ZH_S2T).map(([s,t])=>[t,s]));
+function toTraditional() {
+  const v = document.getElementById('zh-input').value;
+  setOut('zh-output', v.split('').map(c=>ZH_S2T[c]||c).join(''));
+}
+function toSimplified() {
+  const v = document.getElementById('zh-input').value;
+  setOut('zh-output', v.split('').map(c=>ZH_T2S[c]||c).join(''));
+}
+
+// ── 数字转大写 ──
+function numUpper() {
+  const v = document.getElementById('nu-input').value.trim();
+  const el = document.getElementById('nu-result');
+  if (!v || isNaN(v)) { el.innerHTML=''; return; }
+  const n = parseFloat(v);
+  const upper = numberToChinese(n);
+  el.innerHTML = [
+    ['人民币大写', upper],
+    ['整数部分', Math.floor(Math.abs(n)).toLocaleString('zh-CN')],
+    ['原始数字', n.toLocaleString()],
+  ].map(([k,v])=>`<div style="display:flex;background:#12151e;border:1px solid var(--border);border-radius:6px;overflow:hidden;align-items:center">
+    <div style="width:100px;flex-shrink:0;padding:8px 12px;font-size:11px;color:var(--muted);border-right:1px solid var(--border)">${k}</div>
+    <div style="padding:8px 12px;font-size:14px;flex:1;word-break:break-all">${v}</div>
+    <button class="copy-btn" style="position:static;margin:4px 8px" onclick="navigator.clipboard.writeText('${v}')">复制</button>
+  </div>`).join('');
+}
+function numberToChinese(n) {
+  if (n === 0) return '零元整';
+  const digits = ['零','壹','贰','叁','肆','伍','陆','柒','捌','玖'];
+  const units = ['','拾','佰','仟'];
+  const bigUnits = ['','万','亿','万亿'];
+  const sign = n < 0 ? '负' : '';
+  n = Math.abs(n);
+  const intPart = Math.floor(n);
+  const decPart = Math.round((n - intPart) * 100);
+  function intToStr(num) {
+    if (num === 0) return '零';
+    let result = '', zeroFlag = false;
+    const s = String(num);
+    for (let i = 0; i < s.length; i++) {
+      const d = parseInt(s[i]), pos = s.length - i - 1;
+      if (d === 0) { zeroFlag = true; }
+      else { if (zeroFlag && result) result += '零'; result += digits[d] + units[pos % 4]; zeroFlag = false; }
+      if (pos % 4 === 0 && pos > 0) { if (result.slice(-1) !== bigUnits[Math.floor(pos/4)]) result += bigUnits[Math.floor(pos/4)]; }
+    }
+    return result;
+  }
+  let result = sign + intToStr(intPart) + '元';
+  if (decPart === 0) { result += '整'; }
+  else {
+    const jiao = Math.floor(decPart / 10), fen = decPart % 10;
+    if (jiao > 0) result += digits[jiao] + '角';
+    if (fen > 0) result += digits[fen] + '分';
+  }
+  return result;
+}
+
+// ── 随机数 ──
+function genRandom() {
+  const min = parseFloat(document.getElementById('rnd-min').value) || 0;
+  const max = parseFloat(document.getElementById('rnd-max').value) || 100;
+  const count = Math.min(1000, parseInt(document.getElementById('rnd-count').value) || 10);
+  const decimal = parseInt(document.getElementById('rnd-decimal').value) || 0;
+  const unique = document.getElementById('rnd-unique').checked;
+  const results = [];
+  let tries = 0;
+  while (results.length < count && tries < count * 100) {
+    tries++;
+    const v = parseFloat((Math.random() * (max - min) + min).toFixed(decimal));
+    if (!unique || !results.includes(v)) results.push(v);
+  }
+  setOut('rnd-output', results.join('\n'));
+}
+
+// ── Markdown ──
+function mdRender() {
+  const txt = document.getElementById('md-input').value;
+  document.getElementById('md-preview').innerHTML = mdToHtml(txt);
+}
+function mdToHtml(md) {
+  return md
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    // code block
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (_,lang,code)=>`<pre><code>${code}</code></pre>`)
+    // inline code
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    // headings
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    // bold/italic
+    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    // blockquote
+    .replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>')
+    // hr
+    .replace(/^---$/gm,'<hr>')
+    // links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank">$1</a>')
+    // images
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img src="$2" alt="$1">')
+    // unordered list
+    .replace(/^[\*\-] (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    // ordered list
+    .replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    // paragraph
+    .replace(/\n\n/g,'</p><p>').replace(/^(?!<[a-z])(.+)/gm,'<p>$1</p>')
+    .replace(/<p><\/p>/g,'')
+    .replace(/(<blockquote>.*?<\/blockquote>)/g,'$1');
+}
+
+// ── Mermaid ──
+const MMD_EXAMPLES = {
+  flowchart: `flowchart TD
+    A[开始] --> B{判断}
+    B -->|是| C[处理]
+    B -->|否| D[跳过]
+    C --> E[结束]
+    D --> E`,
+  sequence: `sequenceDiagram
+    participant 客户端
+    participant 服务端
+    客户端->>服务端: 发送请求
+    服务端-->>客户端: 返回响应`,
+  class: `classDiagram
+    class Animal {
+      +String name
+      +speak() void
+    }
+    class Dog {
+      +fetch() void
+    }
+    Animal <|-- Dog`,
+  er: `erDiagram
+    USER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains`,
+  gantt: `gantt
+    title 项目计划
+    dateFormat YYYY-MM-DD
+    section 阶段一
+    需求分析 :a1, 2024-01-01, 7d
+    section 阶段二
+    开发 :after a1, 14d`,
+  pie: `pie title 语言占比
+    "JavaScript" : 42
+    "Python" : 28
+    "Go" : 20
+    "其他" : 10`,
+};
+function mmdSetExample() {
+  const v = document.getElementById('mmd-example').value;
+  document.getElementById('mmd-input').value = MMD_EXAMPLES[v] || '';
+  mmdRender();
+}
+let mmdTimer = null;
+function mmdRender() {
+  clearTimeout(mmdTimer);
+  mmdTimer = setTimeout(_mmdRender, 400);
+}
+function _mmdRender() {
+  const txt = document.getElementById('mmd-input').value.trim();
+  const preview = document.getElementById('mmd-preview');
+  const errEl = document.getElementById('mmd-error');
+  errEl.textContent = '';
+  if (!txt) { preview.innerHTML = '<span style="color:#888">输入 Mermaid 代码</span>'; return; }
+  if (!window.mermaid) {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+    s.onload = () => { mermaid.initialize({startOnLoad:false,theme:'dark'}); _mmdRender(); };
+    s.onerror = () => { errEl.textContent = '⚠️ 无法加载 Mermaid 库，请检查网络'; };
+    document.head.appendChild(s); return;
+  }
+  const id = 'mmd-' + Date.now();
+  preview.innerHTML = `<div id="${id}" style="display:none">${txt}</div>`;
+  mermaid.render(id, txt).then(({svg}) => {
+    preview.innerHTML = svg;
+    preview.querySelector('svg').style.maxWidth = '100%';
+  }).catch(e => { errEl.textContent = '✗ ' + e.message; preview.innerHTML = ''; });
+}
+function mmdExport() {
+  const svg = document.getElementById('mmd-preview').querySelector('svg');
+  if (!svg) return;
+  const blob = new Blob([svg.outerHTML], {type:'image/svg+xml'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'diagram.svg'; a.click();
+}
+
+// ── PlantUML ──
+const PUML_EXAMPLES = {
+  sequence: `@startuml
+Alice -> Bob: 发送请求
+Bob --> Alice: 返回响应
+Alice -> Bob: 确认
+@enduml`,
+  class: `@startuml
+class User {
+  -id: int
+  +name: String
+  +login(): bool
+}
+class Order {
+  -userId: int
+  +total: float
+}
+User "1" --> "N" Order
+@enduml`,
+  activity: `@startuml
+start
+:用户登录;
+if (密码正确?) then (是)
+  :进入主页;
+else (否)
+  :显示错误;
+  stop
+endif
+:执行操作;
+stop
+@enduml`,
+  component: `@startuml
+package "前端" {
+  [React App]
+}
+package "后端" {
+  [API Server]
+  [Database]
+}
+[React App] --> [API Server]
+[API Server] --> [Database]
+@enduml`,
+};
+function pumlSetExample() {
+  document.getElementById('puml-input').value = PUML_EXAMPLES[document.getElementById('puml-example').value] || '';
+  pumlRender();
+}
+let pumlTimer = null;
+function pumlDebounce() { clearTimeout(pumlTimer); pumlTimer = setTimeout(pumlRender, 600); }
+function pumlEncode(s) {
+  // PlantUML 编码
+  function encode64(data) {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+    let r='', i=0;
+    while(i<data.length){
+      const b1=data.charCodeAt(i++), b2=i<data.length?data.charCodeAt(i++):0, b3=i<data.length?data.charCodeAt(i++):0;
+      r+=chars[b1>>2]+chars[((b1&3)<<4)|(b2>>4)]+chars[((b2&15)<<2)|(b3>>6)]+chars[b3&63];
+    }
+    return r;
+  }
+  const utf8 = unescape(encodeURIComponent(s));
+  const compressed = deflateRaw(utf8);
+  return encode64(compressed);
+}
+function deflateRaw(s) {
+  // 简单：直接用 TextEncoder + base64，不压缩（PlantUML server 也支持直接 txt 格式）
+  return s;
+}
+function pumlRender() {
+  const txt = document.getElementById('puml-input').value.trim();
+  const img = document.getElementById('puml-img');
+  const hint = document.getElementById('puml-hint');
+  const dlBtn = document.getElementById('puml-dl');
+  if (!txt) { img.style.display='none'; hint.style.display='block'; return; }
+  // 使用 PlantUML 官方 server，txt 格式（无需客户端压缩）
+  const encoded = btoa(unescape(encodeURIComponent(txt)));
+  const url = `https://www.plantuml.com/plantuml/svg/~1${encodeURIComponent(encoded)}`;
+  // 简单起见，直接用 png endpoint + b64
+  const txtB64 = btoa(unescape(encodeURIComponent(txt)));
+  const pngUrl = `https://www.plantuml.com/plantuml/png/~1${txtB64}`;
+  img.onload = () => { img.style.display='block'; hint.style.display='none'; };
+  img.onerror = () => { hint.textContent='⚠️ 渲染失败，请检查语法或网络'; hint.style.display='block'; img.style.display='none'; };
+  img.src = pngUrl;
+  dlBtn.href = pngUrl;
+}
+
+// ── Image Compress ──
+let icFile = null;
+function icProcess(file) {
+  icFile = file;
+  document.getElementById('ic-controls').style.display = 'block';
+  const url = URL.createObjectURL(file);
+  document.getElementById('ic-before').src = url;
+  icPreview();
+}
+function icPreview() {
+  if (!icFile) return;
+  const quality = parseInt(document.getElementById('ic-quality').value) / 100;
+  document.getElementById('ic-quality-val').textContent = Math.round(quality*100) + '%';
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      document.getElementById('ic-after').src = url;
+      document.getElementById('ic-info').innerHTML =
+        `原始：${(icFile.size/1024).toFixed(1)} KB &nbsp;|&nbsp; 压缩后：${(blob.size/1024).toFixed(1)} KB &nbsp;|&nbsp; 压缩率：${((1-blob.size/icFile.size)*100).toFixed(1)}%`;
+    }, 'image/jpeg', quality);
+  };
+  img.src = URL.createObjectURL(icFile);
+}
+function icDownload() {
+  const quality = parseInt(document.getElementById('ic-quality').value) / 100;
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    canvas.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = icFile.name.replace(/\.[^.]+$/, '_compressed.jpg');
+      a.click();
+    }, 'image/jpeg', quality);
+  };
+  img.src = URL.createObjectURL(icFile);
+}
+function icDrop(e) { e.preventDefault(); document.getElementById('ic-drop').style.borderColor='var(--border)'; const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('image/')) icProcess(f); }
+function icFromInput() { const f=document.getElementById('ic-file').files[0]; if(f) icProcess(f); }
+
+// ── Image Convert ──
+let ivFile = null;
+function ivProcess(file) {
+  ivFile = file;
+  document.getElementById('iv-controls').style.display = 'block';
+  document.getElementById('iv-preview').src = URL.createObjectURL(file);
+}
+function ivConvert() {
+  if (!ivFile) return;
+  const fmt = document.getElementById('iv-format').value;
+  const ext = {['image/png']:'png',['image/jpeg']:'jpg',['image/webp']:'webp'}[fmt];
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    canvas.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = ivFile.name.replace(/\.[^.]+$/, `.${ext}`);
+      a.click();
+    }, fmt, 0.95);
+  };
+  img.src = URL.createObjectURL(ivFile);
+}
+function ivDrop(e) { e.preventDefault(); document.getElementById('iv-drop').style.borderColor='var(--border)'; const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('image/')) ivProcess(f); }
+function ivFromInput() { const f=document.getElementById('iv-file').files[0]; if(f) ivProcess(f); }
+
+// ── Palette ──
+function palGen() {
+  let hex = document.getElementById('pal-hex').value.trim();
+  if (!hex.startsWith('#')) hex = '#' + hex;
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  document.getElementById('pal-preview').style.background = hex;
+  document.getElementById('pal-picker').value = hex;
+  const {r,g,b} = hexToRgb(hex);
+  const {h,s,l} = rgbToHsl(r,g,b);
+  const schemes = [
+    ['互补色', [hslColor(h+180,s,l)]],
+    ['类似色', [hslColor(h-30,s,l), hslColor(h+30,s,l)]],
+    ['三角形', [hslColor(h+120,s,l), hslColor(h+240,s,l)]],
+    ['明暗变体', [hslColor(h,s,Math.max(10,l-20)), hslColor(h,s,Math.min(90,l+20))]],
+    ['饱和变体', [hslColor(h,Math.max(10,s-30),l), hslColor(h,Math.min(100,s+30),l)]],
+  ];
+  document.getElementById('pal-result').innerHTML = schemes.map(([name, colors]) => `
+    <div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${name}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div style="width:60px;height:60px;border-radius:8px;background:${hex};cursor:pointer;border:1px solid rgba(255,255,255,.1)" onclick="navigator.clipboard.writeText('${hex}')" title="主色 ${hex}"></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px">${hex}</div>
+        </div>
+        ${colors.map(c=>`<div style="text-align:center">
+          <div style="width:60px;height:60px;border-radius:8px;background:${c};cursor:pointer;border:1px solid rgba(255,255,255,.1)" onclick="navigator.clipboard.writeText('${c}')" title="${c}"></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px">${c}</div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+function hslColor(h,s,l) {
+  h = ((h%360)+360)%360;
+  s = Math.max(0,Math.min(100,s)); l = Math.max(0,Math.min(100,l));
+  const {r,g,b2} = hslToRgb(h,s,l);
+  // reuse colorFromHsl logic
+  s/=100; l/=100;
+  const k=n=>(n+h/30)%12, a=s*Math.min(l,1-l);
+  const f=n=>Math.round((l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1))))*255);
+  return '#'+[f(0),f(8),f(4)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Gradient ──
+const GRAD_PRESETS = [
+  ['#4f7ef7','#a855f7'],['#f97316','#ef4444'],['#22c55e','#06b6d4'],
+  ['#f59e0b','#ef4444'],['#3b82f6','#22c55e'],['#ec4899','#f97316'],
+  ['#1e293b','#334155'],['#0f172a','#1e293b'],
+];
+function gradGen() {
+  const c1 = document.getElementById('grad-c1').value;
+  const c2 = document.getElementById('grad-c2').value;
+  const angle = document.getElementById('grad-angle').value;
+  const css = `linear-gradient(${angle}deg, ${c1}, ${c2})`;
+  document.getElementById('grad-preview').style.background = css;
+  setOut('grad-output', `background: ${css};\nbackground: -webkit-${css};`);
+}
+function gradInit() {
+  document.getElementById('grad-presets').innerHTML = GRAD_PRESETS.map(([c1,c2])=>`
+    <div style="width:48px;height:32px;border-radius:6px;cursor:pointer;background:linear-gradient(135deg,${c1},${c2});border:1px solid rgba(255,255,255,.1)"
+      onclick="document.getElementById('grad-c1').value='${c1}';document.getElementById('grad-c2').value='${c2}';gradGen()"></div>`).join('');
+  gradGen();
+}
+
+// ── ASCII Table ──
+function asciiInit() {
+  asciiFilter();
+}
+function asciiFilter() {
+  const q = document.getElementById('ascii-search').value.toLowerCase();
+  const rows = [];
+  for (let i = 0; i < 128; i++) {
+    const c = String.fromCharCode(i);
+    const display = i < 32 || i === 127 ? ['NUL','SOH','STX','ETX','EOT','ENQ','ACK','BEL','BS','TAB','LF','VT','FF','CR','SO','SI','DLE','DC1','DC2','DC3','DC4','NAK','SYN','ETB','CAN','EM','SUB','ESC','FS','GS','RS','US',''][i] || `^${String.fromCharCode(i+64)}` : (i===127?'DEL':c);
+    const hex = i.toString(16).toUpperCase().padStart(2,'0');
+    const row = `${i} ${hex} ${display} ${c}`.toLowerCase();
+    if (q && !row.includes(q)) continue;
+    rows.push(`<tr>
+      <td style="padding:4px 10px;border:1px solid var(--border);font-family:monospace;color:var(--muted);text-align:center">${i}</td>
+      <td style="padding:4px 10px;border:1px solid var(--border);font-family:monospace;color:var(--accent);text-align:center">0x${hex}</td>
+      <td style="padding:4px 10px;border:1px solid var(--border);font-family:monospace;color:var(--muted);text-align:center">0${i.toString(8).padStart(3,'0')}</td>
+      <td style="padding:4px 10px;border:1px solid var(--border);text-align:center;font-size:16px;width:40px">${i>=32&&i<127?`<span style="cursor:pointer" onclick="navigator.clipboard.writeText('${c.replace(/'/g,"\\'")}');this.style.color='var(--green)';setTimeout(()=>this.style.color='',500)">${c}</span>`:''}</td>
+      <td style="padding:4px 10px;border:1px solid var(--border);font-size:11px;color:var(--muted)">${display}</td>
+    </tr>`);
+  }
+  document.getElementById('ascii-table').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr>
+      <th style="padding:6px 10px;background:#12151e;border:1px solid var(--border);color:var(--muted);font-weight:600">Dec</th>
+      <th style="padding:6px 10px;background:#12151e;border:1px solid var(--border);color:var(--muted);font-weight:600">Hex</th>
+      <th style="padding:6px 10px;background:#12151e;border:1px solid var(--border);color:var(--muted);font-weight:600">Oct</th>
+      <th style="padding:6px 10px;background:#12151e;border:1px solid var(--border);color:var(--muted);font-weight:600">字符</th>
+      <th style="padding:6px 10px;background:#12151e;border:1px solid var(--border);color:var(--muted);font-weight:600">说明</th>
+    </tr></thead>
+    <tbody>${rows.join('')}</tbody>
+  </table>`;
+}
+
 // 初始化
 initSwatches();
 colorFromHex();
 genUUIDs();
+gradInit();
+// URL 路由：?tool=xxx 直接定位
+(function() {
+  const p = new URLSearchParams(location.search).get('tool');
+  if (p && document.getElementById('pane-' + p)) {
+    const item = [...document.querySelectorAll('.nav-item')].find(el => el.getAttribute('onclick') && el.getAttribute('onclick').includes("'" + p + "'"));
+    if (item) { document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); item.classList.add('active'); }
+    document.querySelectorAll('.tool-pane').forEach(el=>el.classList.remove('active'));
+    document.getElementById('pane-' + p).classList.add('active');
+  }
+  // 劫持 show() 同步 URL
+  const _show = window.show;
+  window.show = function(id) { _show(id); history.replaceState(null,'','?tool='+id); };
+})();
 </script>
 </body>
 </html>
