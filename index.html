@@ -1108,18 +1108,24 @@
   <div id="pane-holiday" class="tool-pane">
     <div class="pane-header"><div class="pane-header-left">
       <div class="pane-title">节假日查询</div>
-      <div class="pane-desc">2025 年法定节假日、调休安排，工作日判断</div>
+      <div class="pane-desc">2025 / 2026 年法定节假日、调休安排，工作日判断</div>
     </div></div>
     <div class="row" style="align-items:center;margin-bottom:20px">
       <div class="col"><label>查询日期</label><input type="date" id="hol-date" oninput="holQuery()"></div>
       <div><button class="btn btn-ghost btn-sm" onclick="document.getElementById('hol-date').value=new Date().toISOString().slice(0,10);holQuery()">今天</button></div>
     </div>
     <div id="hol-result" style="margin-bottom:28px"></div>
-    <div class="section-label">2025 年节假日总览</div>
+    <div class="section-label" id="hol-overview-title">节假日总览</div>
     <div id="hol-overview" style="display:flex;flex-direction:column;gap:8px;margin-top:12px"></div>
     <div style="margin-top:24px">
-      <div class="section-label">日历视图</div>
-      <div id="hol-calendar" style="margin-top:12px"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div class="section-label" style="margin-bottom:0;flex:1">日历视图</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" id="hol-yr-2025" onclick="holSetYear(2025)" style="background:var(--border2);color:var(--text)">2025</button>
+          <button class="btn btn-ghost btn-sm" id="hol-yr-2026" onclick="holSetYear(2026)">2026</button>
+        </div>
+      </div>
+      <div id="hol-calendar" style="margin-top:0"></div>
     </div>
   </div>
 
@@ -1187,7 +1193,7 @@ function show(id) {
   if (id === 'cron') cronParse();
   if (id === 'radix') { ['r-bin','r-oct','r-dec','r-hex'].forEach(i => document.getElementById(i).value=''); document.getElementById('r-custom-result').innerHTML=''; }
   if (id === 'mermaid') { if (!document.getElementById('mmd-input').value) mmdSetExample(); else mmdRender(); }
-  if (id === 'holiday') { if (!document.getElementById('hol-date').value) { document.getElementById('hol-date').value = new Date().toISOString().slice(0,10); } holQuery(); holRenderCalendar(); }
+  if (id === 'holiday') { if (!document.getElementById('hol-date').value) { document.getElementById('hol-date').value = new Date().toISOString().slice(0,10); } holSetYear(holYear); holQuery(); }
   if (id === 'lunar') { if (!document.getElementById('lunar-date').value) { document.getElementById('lunar-date').value = new Date().toISOString().slice(0,10); } lunarConvert(); }
   if (id === 'plantuml') { if (!document.getElementById('puml-input').value) pumlSetExample(); }
   if (id === 'gradient') gradInit();
@@ -2690,39 +2696,73 @@ function asciiFilter() {
 // ══════════════════════════════════════════════
 
 // ── 节假日 ──
-const HOL_2025 = {
-  holidays: {
-    '2025-01-01': '元旦',
-    '2025-01-28': '春节','2025-01-29': '春节','2025-01-30': '春节',
-    '2025-01-31': '春节','2025-02-01': '春节','2025-02-02': '春节',
-    '2025-02-03': '春节','2025-02-04': '春节',
-    '2025-04-04': '清明节','2025-04-05': '清明节','2025-04-06': '清明节',
-    '2025-05-01': '劳动节','2025-05-02': '劳动节','2025-05-03': '劳动节',
-    '2025-05-04': '劳动节','2025-05-05': '劳动节',
-    '2025-05-31': '端午节','2025-06-01': '端午节','2025-06-02': '端午节',
-    '2025-10-01': '国庆节','2025-10-02': '国庆节','2025-10-03': '国庆节',
-    '2025-10-04': '国庆节','2025-10-05': '国庆节','2025-10-06': '国庆节+中秋节',
-    '2025-10-07': '国庆节','2025-10-08': '国庆节',
+const HOL_DATA = {
+  2025: {
+    holidays: {
+      '2025-01-01': '元旦',
+      '2025-01-28': '春节','2025-01-29': '春节','2025-01-30': '春节',
+      '2025-01-31': '春节','2025-02-01': '春节','2025-02-02': '春节',
+      '2025-02-03': '春节','2025-02-04': '春节',
+      '2025-04-04': '清明节','2025-04-05': '清明节','2025-04-06': '清明节',
+      '2025-05-01': '劳动节','2025-05-02': '劳动节','2025-05-03': '劳动节',
+      '2025-05-04': '劳动节','2025-05-05': '劳动节',
+      '2025-05-31': '端午节','2025-06-01': '端午节','2025-06-02': '端午节',
+      '2025-10-01': '国庆节','2025-10-02': '国庆节','2025-10-03': '国庆节',
+      '2025-10-04': '国庆节','2025-10-05': '国庆节','2025-10-06': '国庆节+中秋节',
+      '2025-10-07': '国庆节','2025-10-08': '国庆节',
+    },
+    workdays: { '2025-01-26': true, '2025-02-08': true, '2025-10-11': true },
+    overview: [
+      { name:'元旦', dates:'1月1日', days:1, adjust:'' },
+      { name:'春节', dates:'1月28日—2月4日', days:8, adjust:'1月26日、2月8日上班' },
+      { name:'清明节', dates:'4月4日—6日', days:3, adjust:'' },
+      { name:'劳动节', dates:'5月1日—5日', days:5, adjust:'' },
+      { name:'端午节', dates:'5月31日—6月2日', days:3, adjust:'' },
+      { name:'国庆节+中秋节', dates:'10月1日—8日', days:8, adjust:'10月11日上班' },
+    ],
   },
-  workdays: { '2025-01-26': true, '2025-02-08': true, '2025-10-11': true },
-  overview: [
-    { name:'元旦', dates:'1月1日', days:1, rest:'1月1日' },
-    { name:'春节', dates:'1月28日—2月4日', days:8, adjust:'1月26日、2月8日上班' },
-    { name:'清明节', dates:'4月4日—6日', days:3, rest:'' },
-    { name:'劳动节', dates:'5月1日—5日', days:5, rest:'' },
-    { name:'端午节', dates:'5月31日—6月2日', days:3, rest:'' },
-    { name:'国庆节+中秋节', dates:'10月1日—8日', days:8, adjust:'10月11日上班' },
-  ],
+  2026: {
+    holidays: {
+      '2026-01-01': '元旦',
+      '2026-02-17': '春节','2026-02-18': '春节','2026-02-19': '春节',
+      '2026-02-20': '春节','2026-02-21': '春节','2026-02-22': '春节',
+      '2026-02-23': '春节','2026-02-24': '春节',
+      '2026-04-05': '清明节','2026-04-06': '清明节',
+      '2026-05-01': '劳动节','2026-05-02': '劳动节','2026-05-03': '劳动节',
+      '2026-05-04': '劳动节','2026-05-05': '劳动节',
+      '2026-06-19': '端午节','2026-06-20': '端午节','2026-06-21': '端午节',
+      '2026-09-24': '中秋节','2026-09-25': '中秋节','2026-09-26': '中秋节',
+      '2026-10-01': '国庆节','2026-10-02': '国庆节','2026-10-03': '国庆节',
+      '2026-10-04': '国庆节','2026-10-05': '国庆节','2026-10-06': '国庆节',
+      '2026-10-07': '国庆节','2026-10-08': '国庆节',
+    },
+    workdays: { '2026-01-04': true, '2026-02-15': true, '2026-09-27': true, '2026-10-10': true },
+    overview: [
+      { name:'元旦', dates:'1月1日', days:1, adjust:'1月4日上班' },
+      { name:'春节', dates:'2月17日—24日', days:8, adjust:'2月15日上班' },
+      { name:'清明节', dates:'4月5日—6日', days:2, adjust:'' },
+      { name:'劳动节', dates:'5月1日—5日', days:5, adjust:'' },
+      { name:'端午节', dates:'6月19日—21日', days:3, adjust:'' },
+      { name:'中秋节', dates:'9月24日—26日', days:3, adjust:'9月27日上班' },
+      { name:'国庆节', dates:'10月1日—8日', days:8, adjust:'10月10日上班' },
+    ],
+  },
 };
+// 兼容旧引用
+const HOL_2025 = HOL_DATA[2025];
+let holYear = new Date().getFullYear();
+if (!HOL_DATA[holYear]) holYear = 2025;
 function holQuery() {
   const d = document.getElementById('hol-date').value;
   if (!d) return;
+  const yr = parseInt(d.slice(0,4));
+  const hol = HOL_DATA[yr] || HOL_DATA[2025];
   const el = document.getElementById('hol-result');
   const dow = ['周日','周一','周二','周三','周四','周五','周六'][new Date(d + 'T00:00:00').getDay()];
   let type, name = '', color;
-  if (HOL_2025.holidays[d]) {
-    type = '法定假日'; name = HOL_2025.holidays[d]; color = 'var(--green)';
-  } else if (HOL_2025.workdays[d]) {
+  if (hol.holidays[d]) {
+    type = '法定假日'; name = hol.holidays[d]; color = 'var(--green)';
+  } else if (hol.workdays[d]) {
     type = '调休上班日'; color = 'var(--red)';
   } else {
     const day = new Date(d + 'T00:00:00').getDay();
@@ -2738,8 +2778,19 @@ function holQuery() {
   </div>`;
   holRenderOverview();
 }
+function holSetYear(y) {
+  holYear = y;
+  document.getElementById('hol-yr-2025').style.background = y===2025 ? 'var(--border2)' : '';
+  document.getElementById('hol-yr-2025').style.color = y===2025 ? 'var(--text)' : '';
+  document.getElementById('hol-yr-2026').style.background = y===2026 ? 'var(--border2)' : '';
+  document.getElementById('hol-yr-2026').style.color = y===2026 ? 'var(--text)' : '';
+  document.getElementById('hol-overview-title').textContent = `${y} 年节假日总览`;
+  holRenderOverview();
+}
 function holRenderOverview() {
-  document.getElementById('hol-overview').innerHTML = HOL_2025.overview.map(h => `
+  const hol = HOL_DATA[holYear] || HOL_DATA[2025];
+  document.getElementById('hol-overview-title').textContent = `${holYear} 年节假日总览`;
+  document.getElementById('hol-overview').innerHTML = hol.overview.map(h => `
     <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px">
       <div style="background:rgba(91,138,240,.15);color:var(--accent);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap">${h.days}天</div>
       <div style="font-weight:600;font-size:14px">${h.name}</div>
@@ -2750,25 +2801,26 @@ function holRenderOverview() {
 }
 function holRenderCalendar() {
   const today = new Date().toISOString().slice(0,10);
+  const hol = HOL_DATA[holYear] || HOL_DATA[2025];
+  const y = holYear;
   const months = [1,2,3,4,5,6,7,8,9,10,11,12];
   const html = months.map(m => {
-    const y = 2025, fm = String(m).padStart(2,'0');
+    const fm = String(m).padStart(2,'0');
     const firstDay = new Date(y, m-1, 1).getDay();
     const daysInMonth = new Date(y, m, 0).getDate();
-    // 空白占位
     const cells = Array(firstDay).fill('<div></div>');
     for (let d = 1; d <= daysInMonth; d++) {
       const ds = `${y}-${fm}-${String(d).padStart(2,'0')}`;
-      const isHol = !!HOL_2025.holidays[ds];
-      const isWork = !!HOL_2025.workdays[ds];
+      const isHol = !!hol.holidays[ds];
+      const isWork = !!hol.workdays[ds];
       const dow = new Date(ds + 'T00:00:00').getDay();
       const isWeekend = dow === 0 || dow === 6;
       const isToday = ds === today;
-      const title = isHol ? HOL_2025.holidays[ds] : isWork ? '调休上班' : '';
+      const title = isHol ? hol.holidays[ds] : isWork ? '调休上班' : '';
 
-      let inner, cellStyle = 'display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;margin:0 auto;font-size:12px;cursor:default;transition:background .1s;';
+      let cellStyle = 'display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;margin:0 auto;font-size:12px;cursor:default;transition:background .1s;';
       if (isToday) {
-        cellStyle += 'background:var(--accent);color:#fff;font-weight:700;box-shadow:0 0 0 3px rgba(91,138,240,.25);';
+        cellStyle += 'background:var(--accent);color:#fff;font-weight:700;box-shadow:0 0 0 3px rgba(91,138,240,.25);';';
       } else if (isHol) {
         cellStyle += 'background:rgba(52,211,153,.18);color:var(--green);font-weight:700;';
       } else if (isWork) {
@@ -2786,7 +2838,7 @@ function holRenderCalendar() {
     }
     // 7列grid
     return `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 12px">
-      <div style="text-align:center;font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">2025年${m}月</div>
+      <div style="text-align:center;font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text)">${y}年${m}月</div>
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
         ${['日','一','二','三','四','五','六'].map(w=>`<div style="text-align:center;font-size:10px;color:var(--muted);padding-bottom:6px;font-weight:500">${w}</div>`).join('')}
         ${cells.join('')}
